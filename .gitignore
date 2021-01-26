@@ -1,4 +1,7 @@
 .DS_Store
 xcuserdata/
+<<<<<<< HEAD
 msdscript/msdscript
+=======
+>>>>>>> work
 cmake-build-debug

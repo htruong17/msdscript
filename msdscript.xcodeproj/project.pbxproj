@@ -7,8 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5C257C2225BF9FE300D6C084 /* expr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C257C2025BF9FE300D6C084 /* expr.cpp */; };
 		5C5CEB4825B98FAC00470E4E /* cmdline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C5CEB4725B98FAC00470E4E /* cmdline.cpp */; };
-		5C5CEB4A25B98FE500470E4E /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 5C5CEB4925B98FE500470E4E /* main.c */; };
+		5C5CEB4A25B98FE500470E4E /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C5CEB4925B98FE500470E4E /* main.cpp */; };
 		5C5CEB4E25B9959E00470E4E /* Makefile in Sources */ = {isa = PBXBuildFile; fileRef = 5C5CEB4D25B9959E00470E4E /* Makefile */; };
 /* End PBXBuildFile section */
 
@@ -25,10 +26,13 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		5C257C1F25BF9C5800D6C084 /* catch.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = catch.h; sourceTree = "<group>"; };
+		5C257C2025BF9FE300D6C084 /* expr.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = expr.cpp; sourceTree = "<group>"; };
+		5C257C2125BF9FE300D6C084 /* expr.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = expr.h; sourceTree = "<group>"; };
 		5C37887425B9732F0023E98A /* msdscript */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = msdscript; sourceTree = BUILT_PRODUCTS_DIR; };
 		5C37888025B973C00023E98A /* cmdline.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cmdline.h; sourceTree = "<group>"; };
 		5C5CEB4725B98FAC00470E4E /* cmdline.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = cmdline.cpp; sourceTree = "<group>"; };
-		5C5CEB4925B98FE500470E4E /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+		5C5CEB4925B98FE500470E4E /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		5C5CEB4D25B9959E00470E4E /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -64,8 +68,11 @@
 			children = (
 				5C37888025B973C00023E98A /* cmdline.h */,
 				5C5CEB4725B98FAC00470E4E /* cmdline.cpp */,
-				5C5CEB4925B98FE500470E4E /* main.c */,
+				5C5CEB4925B98FE500470E4E /* main.cpp */,
 				5C5CEB4D25B9959E00470E4E /* Makefile */,
+				5C257C1F25BF9C5800D6C084 /* catch.h */,
+				5C257C2025BF9FE300D6C084 /* expr.cpp */,
+				5C257C2125BF9FE300D6C084 /* expr.h */,
 			);
 			path = msdscript;
 			sourceTree = "<group>";
@@ -127,8 +134,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5C257C2225BF9FE300D6C084 /* expr.cpp in Sources */,
 				5C5CEB4E25B9959E00470E4E /* Makefile in Sources */,
-				5C5CEB4A25B98FE500470E4E /* main.c in Sources */,
+				5C5CEB4A25B98FE500470E4E /* main.cpp in Sources */,
 				5C5CEB4825B98FAC00470E4E /* cmdline.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

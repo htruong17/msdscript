@@ -8,6 +8,9 @@
 
 #include <stdio.h>
 #include <iostream>
+#define CATCH_CONFIG_RUNNER
+
+#include "catch.h"
 
 bool tested = false;
 
@@ -17,7 +20,9 @@ int use_arguments(int argc, char **argv){
             std::cout << "Only \"--help\" and \"--test\" arguments are allowed"  << std::endl;
             exit(0);
         } else if(std::string(argv[1]) == "--test" && tested == false){
-            std::cout << "Tests passed"  << std::endl;
+            //Catch::Session().run(1, argv);
+            //std::cout << "Tests passed"  << std::endl;
+            std::cout << Catch::Session().run(1, argv) << std::endl;
             tested = true;
             continue;
         } else if(std::string(argv[1]) == "--test" && tested == true){

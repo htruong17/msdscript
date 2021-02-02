@@ -10,12 +10,14 @@
 #include "catch.h"
 #include <stdexcept>
 #include <iostream>
+#include <sstream>
 
 // Num constructor
 Num::Num(int val) {
     this->val = val;
 }
 
+// Method to compare if this Num expression is equal to another expression
 bool Num::equals(Expr *other){
     Num *other_num = dynamic_cast<Num*>(other);
     if (other_num == NULL)
@@ -39,6 +41,16 @@ bool Num::has_variable(){
 // for comparison
 Expr* Num::subst(std::string subStr, Expr *other){
     return this;
+}
+
+// Prints number value to ostream
+std::ostream& Num::print(std::ostream& argument){
+    return argument << val;
+}
+
+// Prints number value to ostream (for pretty print)
+std::ostream& Num::pretty_print(std::ostream& argument){
+    return argument << val;
 }
 
 // Add constructor
@@ -74,6 +86,44 @@ Expr* Add::subst(std::string subStr, Expr *other){
     return new Add(new_lhs,new_rhs);
 };
 
+// Print Addition expr to ostream
+std::ostream& Add::print(std::ostream& argument){
+    
+    argument << "(";
+    this->lhs->print(argument);
+    argument << "+";
+    this->rhs->print(argument);
+    argument << ")";
+    return argument;
+}
+
+// Calls regular print and outputs a string
+std::string Add::to_string(){
+    std::ostringstream ss;
+    this->print(ss);
+    return ss.str();
+}
+
+// Print function that uses parentheses only when needed
+// For Addition
+std::ostream& Add::pretty_print(std::ostream& argument){
+    print_mode_t mode;
+    if (this->lhs->to_string().find(" ") != std::string::npos)
+        mode = print_group_add_or_mult;
+    else
+        mode = print_group_none;
+    this->lhs->pretty_print_at(mode, argument);
+    argument << " + ";
+    if (this->rhs->to_string().find("*") != std::string::npos)
+        mode = print_group_none;
+    else if (this->rhs->to_string().find(" ") != std::string::npos)
+        mode = print_group_add_or_mult;
+    else
+        mode = print_group_none;
+    this->rhs->pretty_print_at(mode, argument);
+    return argument;
+}
+
 // Mult constructor
 Mult::Mult(Expr *lhs, Expr *rhs) {
     this->lhs = lhs;
@@ -106,6 +156,70 @@ Expr* Mult::subst(std::string subStr, Expr *other){
     Expr *new_rhs = rhs->subst(subStr, other);
     return new Mult(new_lhs,new_rhs);
 };
+
+// Print Multiplication expr to ostream
+std::ostream& Mult::print(std::ostream& argument){
+    argument << "(";
+    this->lhs->print(argument);
+    argument << "*";
+    this->rhs->print(argument);
+    argument << ")";
+    return argument;
+}
+
+// Calls regular print and outputs a string
+std::string Mult::to_string(){
+    std::ostringstream ss;
+    this->print(ss);
+    return ss.str();
+}
+
+// Print function that uses parentheses only when needed
+// For Multiplcation
+std::ostream& Mult::pretty_print(std::ostream& argument){
+    print_mode_t mode;
+    if (this->lhs->to_string().find(" ") != std::string::npos)
+        mode = print_group_add_or_mult;
+    else
+        mode = print_group_none;
+    this->lhs->pretty_print_at(mode, argument);
+    argument << " * ";
+    if (this->rhs->to_string().find("+") != std::string::npos)
+        mode = print_group_add;
+    else
+        mode = print_group_none;
+    this->rhs->pretty_print_at(mode, argument);
+    return argument;
+}
+
+// Helper function to assist with pretty_print.
+// Breaksdown parentheses cases
+std::ostream& Expr::pretty_print_at(print_mode_t mode, std::ostream& argument){
+    if(mode == print_group_none){
+        this->pretty_print(argument);
+        return argument;
+    }
+    if(mode == print_group_add){
+        argument << "(";
+        this->pretty_print(argument);
+        argument << ")";
+        return argument;
+    }
+    if(mode == print_group_add_or_mult){
+        argument << "(";
+        this->pretty_print(argument);
+        argument << ")";
+        return argument;
+    }
+    return argument;
+}
+
+// Allows for Expr to call to_string in function
+std::string Expr::to_string(){
+    std::ostringstream ss;
+    this->pretty_print(ss);
+    return ss.str();
+}
 
 // Var constructor
 Var::Var(std::string str) {
@@ -140,6 +254,17 @@ Expr* Var::subst(std::string subStr, Expr *other){
     else
         return this;
 }
+
+// Prints variable string to ostream
+std::ostream& Var::print(std::ostream& argument){
+    return argument << str;
+}
+
+// Prints variable string to ostream (for pretty print)
+std::ostream& Var::pretty_print(std::ostream& argument){
+    return argument << str;
+}
+
 
 // Different Exprs for testing purposes
 Num *num1 = new Num(1);
@@ -187,4 +312,98 @@ TEST_CASE ("subst") {
     CHECK( (new Add(new Var("x"), new Num(7)))->subst("x", new Num(8))->equals(new Add(new Num(8), new Num(7))) == true);
     CHECK( (new Mult(new Var("x"), new Num(7)))->subst("x", new Num(8))->equals(new Mult(new Num(8), new Num(7))) == true);
     CHECK( (new Mult(new Var("x"), new Num(7)))->subst("x", new Var("y"))->equals(new Mult(new Var("y"), new Num(7))) == true);
+}
+
+TEST_CASE ("print") {
+    std::ostringstream ss;
+    
+    (new Add(num1,new Add(num2,num3)))->print(ss);
+    CHECK(ss.str() == "(1+(2+3))");
+    ss.str("");
+    ss.clear();
+    
+    (new Add(new Add(num1,num2),num3))->print(ss);
+    CHECK(ss.str() == "((1+2)+3)");
+    ss.str("");
+    ss.clear();
+    
+    CHECK( (new Add(num4,new Add(num1,num3)))->to_string() == "(4+(1+3))");
+    CHECK( (new Add((new Add(num2,num2)),new Add(num1,num3)))->to_string() == "((2+2)+(1+3))");
+    
+    (new Mult(num1,new Mult(num2,num3)))->print(ss);
+    CHECK(ss.str() == "(1*(2*3))");
+    ss.str("");
+    ss.clear();
+    
+    (new Mult(new Add(num1,num2),num3))->print(ss);
+    CHECK(ss.str() == "((1+2)*3)");
+    ss.str("");
+    ss.clear();
+    
+    CHECK( (new Mult(num4,new Add(num1,num3)))->to_string() == "(4*(1+3))");
+    CHECK( (new Mult((new Mult(num2,num4)),new Add(num1,num3)))->to_string() == "((2*4)*(1+3))");
+    
+    (new Mult(new Add(num1,num4),new Mult(num3,num4)))->print(ss);
+    CHECK(ss.str() == "((1+4)*(3*4))");
+    ss.str("");
+    ss.clear();
+    
+    (new Add(new Add(num1,varx),num3))->print(ss);
+    CHECK(ss.str() == "((1+x)+3)");
+    ss.str("");
+    ss.clear();
+    
+    (new Mult(new Add(num1,varx),new Mult(vary,num4)))->print(ss);
+    CHECK(ss.str() == "((1+x)*(y*4))");
+    ss.str("");
+    ss.clear();
+}
+
+TEST_CASE ("pretty_print") {
+    std::ostringstream ss;
+    
+    (new Add(num1,new Add(num2,num3)))->pretty_print(ss);
+    CHECK(ss.str() == "1 + (2 + 3)");
+    ss.str("");
+    ss.clear();
+    
+    (new Add(new Add(num1,num2),num3))->pretty_print(ss);
+    CHECK(ss.str() == "(1 + 2) + 3");
+    ss.str("");
+    ss.clear();
+    
+    (new Add(num1,new Mult(num2,num3)))->pretty_print(ss);
+    CHECK(ss.str() == "1 + 2 * 3");
+    ss.str("");
+    ss.clear();
+    
+    (new Mult(num1,new Add(num2,num3)))->pretty_print(ss);
+    CHECK(ss.str() == "1 * (2 + 3)");
+    ss.str("");
+    ss.clear();
+    
+    (new Mult(new Mult(num2,num3),num4))->pretty_print(ss);
+    CHECK(ss.str() == "(2 * 3) * 4");
+    ss.str("");
+    ss.clear();
+    
+    (new Mult(num2,new Mult(num3,num4)))->pretty_print(ss);
+    CHECK(ss.str() == "2 * 3 * 4");
+    ss.str("");
+    ss.clear();
+    
+    (new Mult(new Add(num1,num4),new Mult(num3,num4)))->pretty_print(ss);
+    CHECK(ss.str() == "(1 + 4) * 3 * 4");
+    ss.str("");
+    ss.clear();
+    
+    (new Add(num1,new Mult(num2,vary)))->pretty_print(ss);
+    CHECK(ss.str() == "1 + 2 * y");
+    ss.str("");
+    ss.clear();
+    
+    (new Mult(new Add(varx,num4),new Mult(num3,num4)))->pretty_print(ss);
+    CHECK(ss.str() == "(x + 4) * 3 * 4");
+    ss.str("");
+    ss.clear();
 }

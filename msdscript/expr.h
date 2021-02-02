@@ -12,6 +12,11 @@
 #include <stdio.h>
 #include <string>
 
+typedef enum {
+  print_group_none,
+  print_group_add,
+  print_group_add_or_mult
+} print_mode_t;
 
 class Expr{
 public:
@@ -19,6 +24,11 @@ public:
     virtual int interp() = 0;
     virtual bool has_variable() = 0;
     virtual Expr* subst(std::string str, Expr *other) = 0;
+    virtual std::ostream& print(std::ostream& argument) = 0;
+    std::string to_string();
+    virtual std::ostream& pretty_print(std::ostream& argument) = 0;
+    std::ostream& pretty_print_at(print_mode_t mode, std::ostream& argument);
+    
 };
 
 class Num: public Expr{
@@ -29,6 +39,8 @@ public:
     virtual int interp();
     virtual bool has_variable();
     virtual Expr* subst(std::string str, Expr *other);
+    virtual std::ostream& print(std::ostream& argument);
+    virtual std::ostream& pretty_print(std::ostream& argument);
 };
 
 class Add: public Expr{
@@ -41,6 +53,10 @@ public:
     virtual int interp();
     virtual bool has_variable();
     virtual Expr* subst(std::string str, Expr *other);
+    virtual std::ostream& print(std::ostream& argument);
+    std::string to_string();
+    virtual std::ostream& pretty_print(std::ostream& argument);
+    std::ostream& pretty_print_at(print_mode_t mode, std::ostream& argument);
 };
 
 class Mult: public Expr{
@@ -52,6 +68,10 @@ public:
     virtual int interp();
     virtual bool has_variable();
     virtual Expr* subst(std::string str, Expr *other);
+    virtual std::ostream& print(std::ostream& argument);
+    std::string to_string();
+    virtual std::ostream& pretty_print(std::ostream& argument);
+    std::ostream& pretty_print_at(print_mode_t mode, std::ostream& argument);
 };
 
 class Var: public Expr{
@@ -62,6 +82,8 @@ public:
     virtual int interp();
     virtual bool has_variable();
     virtual Expr* subst(std::string str, Expr *other);
+    virtual std::ostream& print(std::ostream& argument);
+    virtual std::ostream& pretty_print(std::ostream& argument);
 };
 
 #endif /* expr_hpp */

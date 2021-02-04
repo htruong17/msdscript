@@ -4,3 +4,7 @@ SRCS = cmdline.cpp main.cpp expr.cpp
 
 msdscript: $(SRCS) $(INCS)
 	c++ --std=c++14 -O2 -o msdscript $(SRCS)
+	
+.PHONY: test
+test: msdscript
+		./msdscript --test

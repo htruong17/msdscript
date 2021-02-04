@@ -114,12 +114,12 @@ std::ostream& Add::pretty_print(std::ostream& argument){
         mode = print_group_none;
     this->lhs->pretty_print_at(mode, argument);
     argument << " + ";
-    if (this->rhs->to_string().find("*") != std::string::npos)
-        mode = print_group_none;
-    else if (this->rhs->to_string().find(" ") != std::string::npos)
-        mode = print_group_add_or_mult;
-    else
-        mode = print_group_none;
+//    if (this->rhs->to_string().find("*") != std::string::npos)
+//        mode = print_group_none;
+//    else if (this->rhs->to_string().find(" ") != std::string::npos)
+//        mode = print_group_add_or_mult;
+//    else
+    mode = print_group_none;
     this->rhs->pretty_print_at(mode, argument);
     return argument;
 }
@@ -199,19 +199,18 @@ std::ostream& Expr::pretty_print_at(print_mode_t mode, std::ostream& argument){
         this->pretty_print(argument);
         return argument;
     }
-    if(mode == print_group_add){
+    else if(mode == print_group_add){
         argument << "(";
         this->pretty_print(argument);
         argument << ")";
         return argument;
     }
-    if(mode == print_group_add_or_mult){
+    else {
         argument << "(";
         this->pretty_print(argument);
         argument << ")";
         return argument;
     }
-    return argument;
 }
 
 // Allows for Expr to call to_string in function
@@ -267,12 +266,14 @@ std::ostream& Var::pretty_print(std::ostream& argument){
 
 
 // Different Exprs for testing purposes
+Num *null = NULL;
 Num *num1 = new Num(1);
 Num *num2 = new Num(2);
 Num *num3 = new Num(3);
 Num *num4 = new Num(4);
 Var *varx = new Var("x");
 Var *vary = new Var("y");
+
 
 TEST_CASE ("equals") {
     CHECK( (new Num(7))->equals(new Num(7)) == true);
@@ -285,6 +286,10 @@ TEST_CASE ("equals") {
     CHECK( (new Mult(num1,num2))->equals(new Mult(num1,num2)) == true);
     CHECK( (new Add(num1,varx))->equals(new Add(num2,varx)) == false);
     CHECK( (new Add(num1,vary))->equals(new Add(num1,vary)) == true);
+    CHECK( (new Num(7))->equals(null) == false);
+    CHECK( (new Add(num1,num4))->equals(null) == false);
+    CHECK( (new Var("x"))->equals(null) == false);
+    CHECK( (new Mult(num1,num4))->equals(null) == false);
     
 }
 
@@ -312,6 +317,8 @@ TEST_CASE ("subst") {
     CHECK( (new Add(new Var("x"), new Num(7)))->subst("x", new Num(8))->equals(new Add(new Num(8), new Num(7))) == true);
     CHECK( (new Mult(new Var("x"), new Num(7)))->subst("x", new Num(8))->equals(new Mult(new Num(8), new Num(7))) == true);
     CHECK( (new Mult(new Var("x"), new Num(7)))->subst("x", new Var("y"))->equals(new Mult(new Var("y"), new Num(7))) == true);
+    CHECK( (new Var("x"))->subst("y", new Var("b"))->equals(new Var("x")) == true);
+    
 }
 
 TEST_CASE ("print") {
@@ -363,7 +370,7 @@ TEST_CASE ("pretty_print") {
     std::ostringstream ss;
     
     (new Add(num1,new Add(num2,num3)))->pretty_print(ss);
-    CHECK(ss.str() == "1 + (2 + 3)");
+    CHECK(ss.str() == "1 + 2 + 3");
     ss.str("");
     ss.clear();
     

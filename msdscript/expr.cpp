@@ -12,6 +12,20 @@
 #include <iostream>
 #include <sstream>
 
+// Converts Expr to regular print string
+std::string Expr::to_string(){
+    std::ostringstream ss;
+    this->print(ss);
+    return ss.str();
+}
+
+// Converts Expr to pretty_pretty string
+std::string Expr::to_pretty_string(){
+    std::ostringstream ss;
+    this->pretty_print(ss);
+    return ss.str();
+}
+
 // Num constructor
 Num::Num(int val) {
     this->val = val;
@@ -41,16 +55,21 @@ bool Num::has_variable(){
 // for comparison
 Expr* Num::subst(std::string subStr, Expr *other){
     return this;
-}
+};
 
 // Prints number value to ostream
 std::ostream& Num::print(std::ostream& argument){
-    return argument << val;
+    return argument << this->val;
 }
 
 // Prints number value to ostream (for pretty print)
 std::ostream& Num::pretty_print(std::ostream& argument){
-    return argument << val;
+    return argument << this->val;
+}
+
+// Helper function to assist with pretty_print for Num Expressions
+void Num::pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation){
+    argument << this->val;
 }
 
 // Add constructor
@@ -97,32 +116,24 @@ std::ostream& Add::print(std::ostream& argument){
     return argument;
 }
 
-// Calls regular print and outputs a string
-std::string Add::to_string(){
-    std::ostringstream ss;
-    this->print(ss);
-    return ss.str();
+// Helper function to assist with pretty_print for Add Expressions
+void Add::pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation){
+    if (mode >= print_group_add)
+        argument << "(";
+    this->lhs->pretty_print_at(print_group_add, argument, newLineLocation);
+    argument << " + ";
+    this->rhs->pretty_print_at(print_group_none, argument, newLineLocation);
+    if (mode >= print_group_add)
+        argument << ")";
 }
 
 // Print function that uses parentheses only when needed
 // For Addition
 std::ostream& Add::pretty_print(std::ostream& argument){
-    print_mode_t mode;
-    if (this->lhs->to_string().find(" ") != std::string::npos)
-        mode = print_group_add_or_mult;
-    else
-        mode = print_group_none;
-    this->lhs->pretty_print_at(mode, argument);
-    argument << " + ";
-//    if (this->rhs->to_string().find("*") != std::string::npos)
-//        mode = print_group_none;
-//    else if (this->rhs->to_string().find(" ") != std::string::npos)
-//        mode = print_group_add_or_mult;
-//    else
-    mode = print_group_none;
-    this->rhs->pretty_print_at(mode, argument);
-    return argument;
+    this->pretty_print_at(print_group_none, argument, 0);
+    return std::cout;
 }
+
 
 // Mult constructor
 Mult::Mult(Expr *lhs, Expr *rhs) {
@@ -167,58 +178,23 @@ std::ostream& Mult::print(std::ostream& argument){
     return argument;
 }
 
-// Calls regular print and outputs a string
-std::string Mult::to_string(){
-    std::ostringstream ss;
-    this->print(ss);
-    return ss.str();
+// Helper function to assist with pretty_print for Mult Expressions
+void Mult::pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation){
+    if (mode == print_group_add_or_mult)
+        argument << "(";
+    this->lhs->pretty_print_at(print_group_add_or_mult, argument, newLineLocation);
+    argument << " * ";
+    this->rhs->pretty_print_at(print_group_add, argument, newLineLocation);
+    if (mode == print_group_add_or_mult)
+        argument << ")";
 }
-
 // Print function that uses parentheses only when needed
 // For Multiplcation
 std::ostream& Mult::pretty_print(std::ostream& argument){
-    print_mode_t mode;
-    if (this->lhs->to_string().find(" ") != std::string::npos)
-        mode = print_group_add_or_mult;
-    else
-        mode = print_group_none;
-    this->lhs->pretty_print_at(mode, argument);
-    argument << " * ";
-    if (this->rhs->to_string().find("+") != std::string::npos)
-        mode = print_group_add;
-    else
-        mode = print_group_none;
-    this->rhs->pretty_print_at(mode, argument);
+    this->pretty_print_at(print_group_none, argument, 0);
     return argument;
 }
 
-// Helper function to assist with pretty_print.
-// Breaksdown parentheses cases
-std::ostream& Expr::pretty_print_at(print_mode_t mode, std::ostream& argument){
-    if(mode == print_group_none){
-        this->pretty_print(argument);
-        return argument;
-    }
-    else if(mode == print_group_add){
-        argument << "(";
-        this->pretty_print(argument);
-        argument << ")";
-        return argument;
-    }
-    else {
-        argument << "(";
-        this->pretty_print(argument);
-        argument << ")";
-        return argument;
-    }
-}
-
-// Allows for Expr to call to_string in function
-std::string Expr::to_string(){
-    std::ostringstream ss;
-    this->pretty_print(ss);
-    return ss.str();
-}
 
 // Var constructor
 Var::Var(std::string str) {
@@ -252,7 +228,7 @@ Expr* Var::subst(std::string subStr, Expr *other){
     }
     else
         return this;
-}
+};
 
 // Prints variable string to ostream
 std::ostream& Var::print(std::ostream& argument){
@@ -264,6 +240,88 @@ std::ostream& Var::pretty_print(std::ostream& argument){
     return argument << str;
 }
 
+// Helper function to assist with pretty_print for var Expressions
+void Var::pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation){
+    argument << str;
+}
+
+// _let constructor
+_let::_let(std::string variable, Expr *rhs, Expr *body) {
+    this->variable = variable;
+    this->rhs = rhs;
+    this->body = body;
+    //this->newLine = 2;
+};
+
+// Method to compare if this _let expression is equal to another expression
+bool _let::equals(Expr *other){
+    _let *other_let = dynamic_cast<_let*>(other);
+    if (other_let == NULL)
+        return false;
+    else
+        return (this->rhs->equals(other_let->rhs) && this->body->equals(other_let->body) && (this->variable == other_let -> variable));
+}
+
+// Returns the calculated value as an int
+int _let::interp(){
+    Expr* newBody = this->body->subst(variable, rhs);
+    return newBody->interp();
+}
+
+// If the body parameter for _let has a variable
+// then it returns true
+bool _let::has_variable(){
+    return body->has_variable();
+}
+
+// Returns a new _let expr with substituted parameters if applicable
+Expr* _let::subst(std::string subStr, Expr *other){
+    if(subStr == variable){
+        Expr *new_rhs = rhs->subst(subStr,other);
+        return new _let(variable,new_rhs, body);
+    }
+    else {
+        Expr *new_body = body->subst(subStr, other);
+        return new _let(variable,rhs, new_body);
+    }
+};
+
+// Print _let expr to ostream
+std::ostream& _let::print(std::ostream& argument){
+    argument << "(_let " + variable + "=";
+    this->rhs->print(argument);
+    argument << " _in ";
+    this->body->print(argument);
+    argument << ")";
+    return argument;
+}
+
+// Print function that uses parentheses only when needed
+// For Multiplcation
+std::ostream& _let::pretty_print(std::ostream& argument){
+    this->pretty_print_at(print_group_none, argument, 0);
+    return argument;
+}
+
+// Helper function to assist with pretty_print for _let Expressions
+void _let::pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation){
+    
+    if (mode != print_group_none)
+       argument << "(";
+    int num1 = (int)argument.tellp();
+    //std::cout << num1 << std::endl;
+    argument << "_let " + variable + " = ";
+    this->rhs->print(argument);
+    argument << "\n";
+    int newLine = (int)argument.tellp();
+    //std::cout << newLine << std::endl;
+    argument << std::string(num1-newLineLocation, ' ');
+    argument << "_in  ";
+    this->body->pretty_print_at(print_group_none, argument, newLine);
+    if (mode != print_group_none)
+        argument << ")";
+
+}
 
 // Different Exprs for testing purposes
 Num *null = NULL;
@@ -290,6 +348,11 @@ TEST_CASE ("equals") {
     CHECK( (new Add(num1,num4))->equals(null) == false);
     CHECK( (new Var("x"))->equals(null) == false);
     CHECK( (new Mult(num1,num4))->equals(null) == false);
+    CHECK((new Mult(new Num(5), new _let("x", new Num(5), new Add(new Var("x"), new Num(1)))))->equals((new Mult(new Num(5), new _let("x", new Num(5), new Add(new Var("x"), new Num(1)))))) == true);
+    CHECK((new Mult(new Num(5), new _let("x", new Num(5), new Add(new Var("x"), new Num(1)))))->equals((new Mult(new Num(5), new _let("y", new Num(5), new Add(new Var("x"), new Num(1)))))) == false);
+    CHECK((new _let("x", new Num(5), new Add(new Var("x"), new Num(1))))->equals(null) == false);
+    CHECK((new _let("x", new Num(5), new Add(new Var("x"), new Num(1))))->equals(new _let("x", new Num(5), new Add(new Var("x"), new Num(1)))) == true);
+    CHECK((new _let("x", new Num(5), new Add(new Var("x"), new Num(1))))->equals(new _let("y", new Num(5), new Add(new Var("x"), new Num(1)))) == false);
     
 }
 
@@ -298,6 +361,30 @@ TEST_CASE ("interp") {
     CHECK( (new Add(num1,num2))->interp() == 3);
     CHECK( (new Mult(num1,num2))->interp() == 2);
     CHECK_THROWS_WITH( (new Var("x"))->interp(), "no value for variable");
+    
+    CHECK((new Add(new Num(3),(new Mult(new Num(7),(new _let("x", new Num(3), (new _let("x", new Num(5), new Add(new Var("x"), new _let("x", new Num(5), new Mult(new Var("x"), new Num(1))))))))))))->interp() == 73);
+    
+    CHECK((new Add(new Num(3),(new Add(new Num(7),(new _let("x", new Num(3), (new _let("x", new Num(5), new Add(new Var("x"), new _let("x", new Num(5), new Mult(new Var("x"), new Num(1))))))))))))->interp() == 20);
+    CHECK((new _let("x", new Num(5), new Add( new _let("y", new Num(3), new Add( new Var("y"), new Num(2) )), new Var("x"))))->interp() == 10);
+     
+     
+     CHECK((new Add((new Mult(new Num(5), new _let("x", new Num(5), new Var("x")))), new Num(1)))->interp() == 26);
+  
+     
+     CHECK((new Add(new _let("x", new Num(5), new Var("x")), new Num(1)))->interp() == 6);
+
+     
+     CHECK((new Mult(new Num(5), new _let("x", new Num(5), new Add(new Var("x"), new Num(1)))))->interp() == 30);
+ 
+     
+     CHECK((new _let("x", new Num(5), new Add(new Var("x"), new Num(1))))->interp() == 6);
+    
+    CHECK((new _let("x", new Num(5), new Add(new Num(11), new Num(1))))->interp() == 12);
+    
+    CHECK_THROWS_WITH((new Add((new Mult(new Num(5), new _let("x", new Num(5), new Var("y")))), new Num(1)))->interp(), "no value for variable");
+    
+    CHECK_THROWS_WITH((new _let("x", new Num(5), new Add(new Var("z"), new Num(1))))->interp(), "no value for variable");
+  
 }
 
 TEST_CASE ("has_variable") {
@@ -307,6 +394,12 @@ TEST_CASE ("has_variable") {
     CHECK( (new Add(num1,num4))->has_variable() == false);
     CHECK( (new Mult(num2,vary))->has_variable() == true);
     CHECK( (new Mult(num1,num4))->has_variable() == false);
+    CHECK((new Add(new Num(3),(new Add(new Num(7),(new _let("x", new Num(3), (new _let("x", new Num(5), new Add(new Var("x"), new _let("x", new Num(5), new Mult(new Var("x"), new Num(1))))))))))))->has_variable() == true);
+    CHECK((new _let("x", new Num(5), new Add( new _let("y", new Num(3), new Add( new Var("y"), new Num(2) )), new Var("x"))))->has_variable() == true);
+    CHECK((new _let("x", new Num(5), new Add( new _let("y", new Num(3), new Add( new Num(1), new Num(2) )), new Num(2))))->has_variable() == false);
+    CHECK((new _let("x", new Num(5), new Add(new Var("x"), new Num(1))))->has_variable() == true);
+    CHECK((new _let("x", new Num(5), new Add(new Num(2), new Num(1))))->has_variable() == false);
+    
 }
 
 TEST_CASE ("subst") {
@@ -318,7 +411,9 @@ TEST_CASE ("subst") {
     CHECK( (new Mult(new Var("x"), new Num(7)))->subst("x", new Num(8))->equals(new Mult(new Num(8), new Num(7))) == true);
     CHECK( (new Mult(new Var("x"), new Num(7)))->subst("x", new Var("y"))->equals(new Mult(new Var("y"), new Num(7))) == true);
     CHECK( (new Var("x"))->subst("y", new Var("b"))->equals(new Var("x")) == true);
-    
+    CHECK((new _let("x", new Add(new Num(4), new Var("x")), new Var("x")))->subst("x", new Var("y"))->equals(new _let("x", new Add(new Num(4), new Var("y")),new Var("x"))));
+    CHECK((new _let("y", new Num(4), new Var("x")))->subst("x", new Var("y"))->equals(new _let("y",  new Num(4) ,new Var("y"))));
+    CHECK((new _let("x", new Num(4), new Var("x")))->subst("x", new Var("y"))->equals(new _let("x",  new Num(4) ,new Var("x"))));
 }
 
 TEST_CASE ("print") {
@@ -364,15 +459,50 @@ TEST_CASE ("print") {
     CHECK(ss.str() == "((1+x)*(y*4))");
     ss.str("");
     ss.clear();
+    
+    (new _let("x", new Num(5), new Add( new _let("y", new Num(3), new Add( new Var("y"), new Num(2) )), new Var("x"))))->print(ss);
+     CHECK(ss.str() == "(_let x=5 _in ((_let y=3 _in (y+2))+x))");
+     ss.str("");
+     ss.clear();
+
+     (new Add((new Mult(new Num(5), new _let("x", new Num(5), new Var("x")))), new Num(1)))->print(ss);
+     CHECK(ss.str() == "((5*(_let x=5 _in x))+1)");
+     ss.str("");
+     ss.clear();
+
+     (new Add(new _let("x", new Num(5), new Var("x")), new Num(1)))->print(ss);
+     CHECK(ss.str() == "((_let x=5 _in x)+1)");
+     ss.str("");
+     ss.clear();
+
+    (new Mult(new Num(5), new _let("x", new Num(5), new Add(new Var("x"), new Num(1)))))->print(ss);
+     CHECK(ss.str() == "(5*(_let x=5 _in (x+1)))");
+     ss.str("");
+     ss.clear();
+
+     (new _let("x", new Num(5), new Add(new Var("x"), new Num(1))))->print(ss);
+     CHECK(ss.str() == "(_let x=5 _in (x+1))");
+     ss.str("");
+     ss.clear();
+    
+    (new Add(new Num(3),(new Mult(new Num(7),(new _let("x", new Num(3), (new _let("x", new Num(5), new Add(new Var("x"), new _let("x", new Num(5), new Mult(new Var("x"), new Num(1))))))))))))->print(ss);
+    CHECK(ss.str() == "(3+(7*(_let x=3 _in (_let x=5 _in (x+(_let x=5 _in (x*1)))))))");
+    ss.str("");
+    ss.clear();
+    
+    (new Add(new Num(3),(new Add(new Num(7),(new _let("x", new Num(3), (new _let("x", new Num(5), new Add(new Var("x"), new _let("x", new Num(5), new Mult(new Var("x"), new Num(1))))))))))))->print(ss);
+    CHECK(ss.str() == "(3+(7+(_let x=3 _in (_let x=5 _in (x+(_let x=5 _in (x*1)))))))");
+    ss.str("");
+    ss.clear();
 }
 
 TEST_CASE ("pretty_print") {
     std::ostringstream ss;
     
-    (new Add(num1,new Add(num2,num3)))->pretty_print(ss);
-    CHECK(ss.str() == "1 + 2 + 3");
-    ss.str("");
-    ss.clear();
+    
+    CHECK((new Var("x"))->to_pretty_string() == "x");
+    CHECK((new Num(5))->to_pretty_string() == "5");
+    CHECK((new Add(num1,new Add(num2,num3)))->to_pretty_string() == "1 + 2 + 3");
     
     (new Add(new Add(num1,num2),num3))->pretty_print(ss);
     CHECK(ss.str() == "(1 + 2) + 3");
@@ -409,8 +539,52 @@ TEST_CASE ("pretty_print") {
     ss.str("");
     ss.clear();
     
+    
     (new Mult(new Add(varx,num4),new Mult(num3,num4)))->pretty_print(ss);
     CHECK(ss.str() == "(x + 4) * 3 * 4");
     ss.str("");
     ss.clear();
+    
+    (new Add(new Mult(num2,num3),num4))->pretty_print(ss);
+    CHECK(ss.str() == "2 * 3 + 4");
+    ss.str("");
+    ss.clear();
+    
+    (new _let("x", new Num(5), new Add( new _let("y", new Num(3), new Add( new Var("y"), new Num(2) )), new Var("x"))))->pretty_print(ss);
+    CHECK(ss.str() == "_let x = 5\n_in  (_let y = 3\n      _in  y + 2) + x");
+    ss.str("");
+    ss.clear();
+    
+    (new Add((new Mult(new Num(5), new _let("x", new Num(5), new Var("x")))), new Num(1)))->pretty_print(ss);
+    CHECK(ss.str() == "5 * (_let x = 5\n     _in  x) + 1");
+    ss.str("");
+    ss.clear();
+    
+    (new Add(new _let("x", new Num(5), new Var("x")), new Num(1)))->pretty_print(ss);
+    CHECK(ss.str() == "(_let x = 5\n _in  x) + 1");
+    ss.str("");
+    ss.clear();
+    
+   (new Mult(new Num(5), new _let("x", new Num(5), new Add(new Var("x"), new Num(1)))))->pretty_print(ss);
+    CHECK(ss.str() == "5 * (_let x = 5\n     _in  x + 1)");
+    ss.str("");
+    ss.clear();
+    
+    (new _let("x", new Num(5), new Add(new Var("x"), new Num(1))))->pretty_print(ss);
+    CHECK(ss.str() == "_let x = 5\n_in  x + 1");
+    ss.str("");
+    ss.clear();
+    
+    (new Add(new Num(3),(new Mult(new Num(7),(new _let("x", new Num(3), (new _let("x", new Num(5), new Add(new Var("x"), new _let("x", new Num(5), new Mult(new Var("x"), new Num(1))))))))))))->pretty_print(ss);
+    CHECK(ss.str() == "3 + 7 * (_let x = 3\n         _in  _let x = 5\n              _in  x + _let x = 5\n                       _in  x * 1)");
+    ss.str("");
+    ss.clear();
+
+    
+    (new Add(new Num(3),(new Add(new Num(7),(new _let("x", new Num(3), (new _let("x", new Num(5), new Add(new Var("x"), new _let("x", new Num(5), new Mult(new Var("x"), new Num(1))))))))))))->pretty_print(ss);
+    CHECK(ss.str() == "3 + 7 + _let x = 3\n        _in  _let x = 5\n             _in  x + _let x = 5\n                      _in  x * 1");
+    ss.str("");
+    ss.clear();
+    
+    
 }

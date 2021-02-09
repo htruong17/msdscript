@@ -26,8 +26,9 @@ public:
     virtual Expr* subst(std::string str, Expr *other) = 0;
     virtual std::ostream& print(std::ostream& argument) = 0;
     std::string to_string();
+    std::string to_pretty_string();
     virtual std::ostream& pretty_print(std::ostream& argument) = 0;
-    std::ostream& pretty_print_at(print_mode_t mode, std::ostream& argument);
+    virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation) = 0;
     
 };
 
@@ -41,6 +42,7 @@ public:
     virtual Expr* subst(std::string str, Expr *other);
     virtual std::ostream& print(std::ostream& argument);
     virtual std::ostream& pretty_print(std::ostream& argument);
+    virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation);
 };
 
 class Add: public Expr{
@@ -54,9 +56,9 @@ public:
     virtual bool has_variable();
     virtual Expr* subst(std::string str, Expr *other);
     virtual std::ostream& print(std::ostream& argument);
-    std::string to_string();
+    //std::string to_string();
     virtual std::ostream& pretty_print(std::ostream& argument);
-    std::ostream& pretty_print_at(print_mode_t mode, std::ostream& argument);
+    virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation);
 };
 
 class Mult: public Expr{
@@ -69,9 +71,9 @@ public:
     virtual bool has_variable();
     virtual Expr* subst(std::string str, Expr *other);
     virtual std::ostream& print(std::ostream& argument);
-    std::string to_string();
+    //std::string to_string();
     virtual std::ostream& pretty_print(std::ostream& argument);
-    std::ostream& pretty_print_at(print_mode_t mode, std::ostream& argument);
+    virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation);
 };
 
 class Var: public Expr{
@@ -84,6 +86,25 @@ public:
     virtual Expr* subst(std::string str, Expr *other);
     virtual std::ostream& print(std::ostream& argument);
     virtual std::ostream& pretty_print(std::ostream& argument);
+    virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation);
+};
+
+class _let: public Expr{
+public:
+    std::string variable;
+    Expr *rhs;
+    Expr *body;
+    //int newLine;
+    
+    _let(std::string variable, Expr *rhs, Expr *body);
+    virtual bool equals(Expr *other);
+    virtual int interp();
+    virtual bool has_variable();
+    virtual Expr* subst(std::string str, Expr *other);
+    virtual std::ostream& print(std::ostream& argument);
+    virtual std::ostream& pretty_print(std::ostream& argument);
+    virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation);
+    //std::string to_string();
 };
 
 #endif /* expr_hpp */

@@ -28,7 +28,7 @@ public:
     std::string to_string();
     std::string to_pretty_string();
     virtual std::ostream& pretty_print(std::ostream& argument) = 0;
-    virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation) = 0;
+    virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, int nesting, std::string side) = 0;
     
 };
 
@@ -42,7 +42,7 @@ public:
     virtual Expr* subst(std::string str, Expr *other);
     virtual std::ostream& print(std::ostream& argument);
     virtual std::ostream& pretty_print(std::ostream& argument);
-    virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation);
+    virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, int nesting, std::string side);
 };
 
 class Add: public Expr{
@@ -58,7 +58,7 @@ public:
     virtual std::ostream& print(std::ostream& argument);
     //std::string to_string();
     virtual std::ostream& pretty_print(std::ostream& argument);
-    virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation);
+    virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, int nesting, std::string side);
 };
 
 class Mult: public Expr{
@@ -73,7 +73,7 @@ public:
     virtual std::ostream& print(std::ostream& argument);
     //std::string to_string();
     virtual std::ostream& pretty_print(std::ostream& argument);
-    virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation);
+    virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, int nesting, std::string side);
 };
 
 class Var: public Expr{
@@ -86,7 +86,7 @@ public:
     virtual Expr* subst(std::string str, Expr *other);
     virtual std::ostream& print(std::ostream& argument);
     virtual std::ostream& pretty_print(std::ostream& argument);
-    virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation);
+    virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, int nesting, std::string side);
 };
 
 class _let: public Expr{
@@ -103,7 +103,7 @@ public:
     virtual Expr* subst(std::string str, Expr *other);
     virtual std::ostream& print(std::ostream& argument);
     virtual std::ostream& pretty_print(std::ostream& argument);
-    virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation);
+    virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, int nesting, std::string side);
     //std::string to_string();
 };
 

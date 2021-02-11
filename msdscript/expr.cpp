@@ -68,7 +68,7 @@ std::ostream& Num::pretty_print(std::ostream& argument){
 }
 
 // Helper function to assist with pretty_print for Num Expressions
-void Num::pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation){
+void Num::pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, int nesting, std::string side){
     argument << this->val;
 }
 
@@ -117,12 +117,13 @@ std::ostream& Add::print(std::ostream& argument){
 }
 
 // Helper function to assist with pretty_print for Add Expressions
-void Add::pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation){
+void Add::pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, int nesting, std::string side){
+    nesting += 1;
     if (mode >= print_group_add)
         argument << "(";
-    this->lhs->pretty_print_at(print_group_add, argument, newLineLocation);
+    this->lhs->pretty_print_at(print_group_add, argument, newLineLocation, nesting, "lhs");
     argument << " + ";
-    this->rhs->pretty_print_at(print_group_none, argument, newLineLocation);
+    this->rhs->pretty_print_at(print_group_none, argument, newLineLocation, nesting, "rhs");
     if (mode >= print_group_add)
         argument << ")";
 }
@@ -130,7 +131,7 @@ void Add::pretty_print_at(print_mode_t mode, std::ostream& argument, int newLine
 // Print function that uses parentheses only when needed
 // For Addition
 std::ostream& Add::pretty_print(std::ostream& argument){
-    this->pretty_print_at(print_group_none, argument, 0);
+    this->pretty_print_at(print_group_none, argument, 0, 0, "");
     return std::cout;
 }
 
@@ -179,19 +180,20 @@ std::ostream& Mult::print(std::ostream& argument){
 }
 
 // Helper function to assist with pretty_print for Mult Expressions
-void Mult::pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation){
+void Mult::pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, int nesting, std::string side){
+    nesting += 1;
     if (mode == print_group_add_or_mult)
         argument << "(";
-    this->lhs->pretty_print_at(print_group_add_or_mult, argument, newLineLocation);
+    this->lhs->pretty_print_at(print_group_add_or_mult, argument, newLineLocation, nesting, "lhs");
     argument << " * ";
-    this->rhs->pretty_print_at(print_group_add, argument, newLineLocation);
+    this->rhs->pretty_print_at(print_group_add, argument, newLineLocation, nesting, "rhs");
     if (mode == print_group_add_or_mult)
         argument << ")";
 }
 // Print function that uses parentheses only when needed
 // For Multiplcation
 std::ostream& Mult::pretty_print(std::ostream& argument){
-    this->pretty_print_at(print_group_none, argument, 0);
+    this->pretty_print_at(print_group_none, argument, 0, 0, "");
     return argument;
 }
 
@@ -241,7 +243,7 @@ std::ostream& Var::pretty_print(std::ostream& argument){
 }
 
 // Helper function to assist with pretty_print for var Expressions
-void Var::pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation){
+void Var::pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, int nesting, std::string side){
     argument << str;
 }
 
@@ -250,7 +252,6 @@ _let::_let(std::string variable, Expr *rhs, Expr *body) {
     this->variable = variable;
     this->rhs = rhs;
     this->body = body;
-    //this->newLine = 2;
 };
 
 // Method to compare if this _let expression is equal to another expression
@@ -299,27 +300,28 @@ std::ostream& _let::print(std::ostream& argument){
 // Print function that uses parentheses only when needed
 // For Multiplcation
 std::ostream& _let::pretty_print(std::ostream& argument){
-    this->pretty_print_at(print_group_none, argument, 0);
+    this->pretty_print_at(print_group_none, argument, 0, 0, "");
     return argument;
 }
 
 // Helper function to assist with pretty_print for _let Expressions
-void _let::pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation){
-    
-    if (mode != print_group_none)
+void _let::pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, int nesting, std::string side){
+    if(side == "lhs"){
+        argument << "(";
+    } else if (mode != print_group_none && nesting > 1)
        argument << "(";
     int num1 = (int)argument.tellp();
-    //std::cout << num1 << std::endl;
     argument << "_let " + variable + " = ";
     this->rhs->print(argument);
     argument << "\n";
     int newLine = (int)argument.tellp();
-    //std::cout << newLine << std::endl;
     argument << std::string(num1-newLineLocation, ' ');
     argument << "_in  ";
-    this->body->pretty_print_at(print_group_none, argument, newLine);
-    if (mode != print_group_none)
-        argument << ")";
+    this->body->pretty_print_at(print_group_none, argument, newLine, nesting, "");
+    if(side == "lhs"){
+          argument << ")";
+    } else if (mode != print_group_none && nesting > 1)
+         argument << ")";
 
 }
 
@@ -566,7 +568,7 @@ TEST_CASE ("pretty_print") {
     ss.clear();
     
    (new Mult(new Num(5), new _let("x", new Num(5), new Add(new Var("x"), new Num(1)))))->pretty_print(ss);
-    CHECK(ss.str() == "5 * (_let x = 5\n     _in  x + 1)");
+    CHECK(ss.str() == "5 * _let x = 5\n    _in  x + 1");
     ss.str("");
     ss.clear();
     
@@ -586,5 +588,94 @@ TEST_CASE ("pretty_print") {
     ss.str("");
     ss.clear();
     
-    
+//    (new Mult(new Num(5), new _let("x", new Num(5), new Var("x"))))->pretty_print(ss);
+//    std::cout << (ss.str()) <<std::endl;
+//    ss.str("");
+//    ss.clear();
+//     std::cout <<std::endl;
+//
+//    (new Add((new Mult(new Num(5), new _let("x", new Num(5), new Var("x")))),new Num(1)))->pretty_print(ss);
+//    std::cout << (ss.str()) <<std::endl;
+//    ss.str("");
+//    ss.clear();
+//
+//     std::cout <<std::endl;
+//    (new Add(new _let("x", new Num(5), new Var("x")), new Num(5) ))->pretty_print(ss);;
+//    std::cout << (ss.str()) <<std::endl;
+//    ss.str("");
+//    ss.clear();
+//
+//    std::cout <<std::endl;
+//    (new Mult(new _let("x", new Num(5), new Var("x")), new Num(5) ))->pretty_print(ss);;
+//    std::cout << (ss.str()) <<std::endl;
+//    ss.str("");
+//    ss.clear();
 }
+
+TEST_CASE( "more subst" ) {
+  // _let x = 1
+  // _in  x + 2  -> subst("x", y+3)
+  // =
+  // _let x = 1
+  // _in  x + 2
+  Expr *let1 = (new _let("x",
+                        new Num(1),
+                        new Add(new Var("x"), new Num(2))));
+  CHECK( let1->subst("x", new Add(new Var("y"), new Num(3)))
+        ->equals(let1) );
+
+  // _let x = x
+  // _in  x + 2  -> subst("x", y+3)
+  // =
+  // _let x = y+3
+  // _in  x + 2
+  Expr *let2 = (new _let("x",
+                        new Var("x"),
+                        new Add(new Var("x"), new Num(2))));
+  CHECK( let2->subst("x", new Add(new Var("y"), new Num(3)))
+        ->equals(new _let("x",
+                         new Add(new Var("y"), new Num(3)),
+                         new Add(new Var("x"), new Num(2)))) );
+  
+  // _let x = y
+  // _in  x + 2 -> subst("y", 8)
+  // =
+  // _let x = 8
+  // _in  x + 2
+  
+  // _let x = 8
+  // _in  x + 2 + y -> subst("y", 9)
+  // =
+  // _let x = 8
+  // _in  x + 2 + 9
+
+  // y + y -> subst("y", 8)
+  // =
+  // 8 + 8
+
+  // _let x = y
+  // _in  x + y -> subst("y", 8)
+  // =
+  // _let x = 8
+  // _in  x + 8
+
+  // _let z = x
+  // _in  z + 32 -> subst("z", 0)
+  // =
+  // _let z = x
+  // _in  z + 32
+  
+  // _let z = z
+  // _in  z + 32 -> subst("z", 0)
+  // =
+  // _let z = 0
+  // _in  z + 32
+
+  // _let z = z + 2
+  // _in  z + 32 -> subst("z", 0)
+  // =
+  // _let z = 0 + 2
+  // _in  z + 32
+
+}
+

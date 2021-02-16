@@ -1,6 +1,6 @@
-INCS = cmdline.h expr.h
+INCS = cmdline.h expr.h parse.h
 
-SRCS = cmdline.cpp main.cpp expr.cpp
+SRCS = cmdline.cpp main.cpp expr.cpp parse.cpp
 
 msdscript: $(SRCS) $(INCS)
 	c++ --std=c++14 -O2 -o msdscript $(SRCS)

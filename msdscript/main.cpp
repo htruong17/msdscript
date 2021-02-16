@@ -9,16 +9,18 @@
 //#define CATCH_CONFIG_RUNNER
 
 //#include "catch.h"
+
 #include "cmdline.h"
 #include "expr.h"
+#include "parse.h"
+#include <iostream>
 
 
 
 int main(int argc, char **argv) {
   use_arguments(argc, argv);
   //Catch::Session().run(1, argv);
-    
-    
+
   return 0;
 }
 

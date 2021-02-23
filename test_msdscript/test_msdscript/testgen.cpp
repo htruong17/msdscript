@@ -8,7 +8,7 @@
 
 #include "testgen.h"
 
-
+// Randomly add blank spaces
 std::string blank_space() {
     if (rand() % 5 == 1)
         return std::string(rand() % 10, ' ');
@@ -16,6 +16,7 @@ std::string blank_space() {
         return "";
 }
 
+// Randomly include parentheses
 std::string parentheses(std::string input) {
     if (rand() % 10 == 1)
         return "(" + input + ")";
@@ -23,6 +24,7 @@ std::string parentheses(std::string input) {
         return input;
 }
 
+// Randomly turns a number string negative
 std::string negative(std::string input) {
     if (rand() % 10 == 1)
         return "-" + input;
@@ -30,6 +32,7 @@ std::string negative(std::string input) {
         return input;
 }
 
+// Use to get a long string of variables
 std::string random_var_string() {
     std::string letter = "";
     for (int i = 0; i < (rand() % 20) + 1; i++){
@@ -43,17 +46,19 @@ std::string random_var_string() {
     return letter;
 }
 
+// Use to get just one variable
 std::string random_var() {
     std::string letter = "";
     letter += (char)((rand() % 26) + 97);
     return letter;
 }
 
-
+// Helper function to create _let string
 std::string random_let_string() {
     return "_let " + blank_space() + random_var() + blank_space() + "=" + blank_space() + random_expr_string() + blank_space() + " _in " + blank_space() + random_expr_string();
 }
 
+// Expression function that mixes number, variable, _let, add, and mult to form a collective expression
 std::string random_expr_string() {
     if (rand() % 20 < 12)
         return negative(std::to_string(rand()));
@@ -70,5 +75,3 @@ std::string random_expr_string() {
     else
         return parentheses(random_expr_string()) + blank_space() + "+" + blank_space() +  parentheses(random_expr_string());
 }
-
-

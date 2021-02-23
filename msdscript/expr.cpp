@@ -308,7 +308,7 @@ void _let::pretty_print_at(print_mode_t mode, std::ostream& argument, int newLin
        argument << "(";
     int num1 = (int)argument.tellp();
     argument << "_let " + variable + " = ";
-    this->rhs->print(argument);
+    this->rhs->pretty_print(argument);
     argument << "\n";
     int newLine = (int)argument.tellp();
     argument << std::string(num1-newLineLocation, ' ');

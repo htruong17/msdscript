@@ -113,9 +113,10 @@ Expr *parse_var(std::istream &in){
     skip_whitespace(in);
     std::string variable = "";
     int c = in.peek();
-    if (isalpha(c)) {
+    while (isalpha(c) == true) {
         consume(in, c);
         variable += c;
+        c = in.peek();
     }
     return new Var(variable);
 }
@@ -187,6 +188,7 @@ TEST_CASE ("parse_interp") {
     CHECK_THROWS_WITH(parse_str("(_for x=5 _in ((_let y=3 _in (y+2))+x)")->interp(), "invalid input");
     CHECK_THROWS_WITH(consume(in_stream, '2'), "consume mismatch");
     CHECK(parse_str("8")->interp() == 8);
+    CHECK(parse_str("_let woof=6 _in woof*3")->interp() == 18);
 }
 
 TEST_CASE ("parse_interp_spacing") {

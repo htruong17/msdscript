@@ -18,9 +18,12 @@
 
 
 int main(int argc, char **argv) {
-  use_arguments(argc, argv);
+    try {
+        use_arguments(argc, argv);
+        return 0;
+    } catch (std::runtime_error exn) {
+        std::cerr <<exn.what() << "\n";
+        return 1;
+    }
   //Catch::Session().run(1, argv);
-
-  return 0;
 }
-

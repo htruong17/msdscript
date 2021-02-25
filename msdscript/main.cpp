@@ -19,11 +19,12 @@
 
 int main(int argc, char **argv) {
     try {
+        //Catch::Session().run(1, argv);
         use_arguments(argc, argv);
         return 0;
     } catch (std::runtime_error exn) {
         std::cerr <<exn.what() << "\n";
         return 1;
     }
-  //Catch::Session().run(1, argv);
+
 }

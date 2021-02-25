@@ -10,6 +10,7 @@
 #include <iostream>
 #include <sstream>
 #include "parse.h"
+#include "val.h"
 //#include "expr.h"
 
 static void consume(std::istream &in, int expect){
@@ -45,7 +46,7 @@ Expr *parse_num(std::istream &in) {
     }
     if (negative)
         n = -n;
-    return new Num(n);
+    return new NumExpr(n);
 }
 
 Expr *parse_multicand(std::istream &in){
@@ -82,7 +83,7 @@ Expr *parse_addend(std::istream &in){
     if (c == '*') {
         consume(in, '*');
         Expr *rhs = parse_addend(in);
-        return new Mult(e, rhs);
+        return new MultExpr(e, rhs);
     } else
         return e;
 }
@@ -95,7 +96,7 @@ static Expr *parse_expr(std::istream &in) {
     if (c == '+') {
         consume(in, '+');
         Expr *rhs = parse_expr(in);
-        return new Add(e, rhs);
+        return new AddExpr(e, rhs);
     } else
         return e;
 }
@@ -118,7 +119,7 @@ Expr *parse_var(std::istream &in){
         variable += c;
         c = in.peek();
     }
-    return new Var(variable);
+    return new VarExpr(variable);
 }
 
 Expr *parse_let(std::istream &in){
@@ -138,7 +139,7 @@ Expr *parse_let(std::istream &in){
         body = parse_expr(in);
     else
         throw std::runtime_error("invalid input");
-    return new _let(var->to_string(), rhs, body);
+    return new LetExpr(var->to_string(), rhs, body);
 }
 
 bool parse_keyword(std::istream &in){
@@ -175,11 +176,11 @@ bool parse_keyword(std::istream &in){
 TEST_CASE ("parse_interp") {
     std::string addition = "24+8";
     std::istringstream in_stream(addition);
-    CHECK(parse(in_stream)->interp() == 32);
-    CHECK(parse_str("1+4")->interp() == 5);
-    CHECK(parse_str("-1+4")->interp() == 3);
-    CHECK(parse_str("_let x=6 _in x*3")->interp() == 18);
-    CHECK(parse_str("(5*(_let x=5 _in (x+1)))")->interp() == 30);
+    CHECK(parse(in_stream)->interp()->equals(new NumVal(32)));
+    CHECK(parse_str("1+4")->interp()->equals(new NumVal(5)));
+    CHECK(parse_str("-1+4")->interp()->equals(new NumVal(3)));
+    CHECK(parse_str("_let x=6 _in x*3")->interp()->equals(new NumVal(18)));
+    CHECK(parse_str("(5*(_let x=5 _in (x+1)))")->interp()->equals(new NumVal(30)));
     CHECK_THROWS_WITH(parse_str("(_let x=5 _in ((_let y=3 _in (y+2))+x)")->interp(), "missing close parenthesis");
     CHECK_THROWS_WITH(parse_str("! % (3"), "invalid input");
     CHECK_THROWS_WITH(parse_str("(_lets x=5 _in ((_let y=3 _in (y+2))+x)")->interp(), "invalid input");
@@ -187,15 +188,15 @@ TEST_CASE ("parse_interp") {
     CHECK_THROWS_WITH(parse_str("(_let x=5 _in ((_let y=3 _ins (y+2))+x)")->interp(), "invalid input");
     CHECK_THROWS_WITH(parse_str("(_for x=5 _in ((_let y=3 _in (y+2))+x)")->interp(), "invalid input");
     CHECK_THROWS_WITH(consume(in_stream, '2'), "consume mismatch");
-    CHECK(parse_str("8")->interp() == 8);
-    CHECK(parse_str("_let woof=6 _in woof*3")->interp() == 18);
+    CHECK(parse_str("8")->interp()->equals(new NumVal(8)));
+    CHECK(parse_str("_let woof=6 _in woof*3")->interp()->equals(new NumVal(18)));
 }
 
 TEST_CASE ("parse_interp_spacing") {
-    CHECK(parse_str("   (    1  +   2     )    +   3    ")->interp() == 6);
-    CHECK(parse_str(" 3 + 7 + _let x = 3        _in  _let x = 5             _in  x + _let x = 5                      _in  x * 1")->interp() == 20);
-    CHECK(parse_str("   (    1  *   2     )    +  ( 3 *4  ) ")->interp() == 14);
-    CHECK(parse_str("     24")->interp() == 24);
+    CHECK(parse_str("   (    1  +   2     )    +   3    ")->interp()->equals(new NumVal(6)));
+    CHECK(parse_str(" 3 + 7 + _let x = 3        _in  _let x = 5             _in  x + _let x = 5                      _in  x * 1")->interp()->equals(new NumVal(20)));
+    CHECK(parse_str("   (    1  *   2     )    +  ( 3 *4  ) ")->interp()->equals(new NumVal(14)));
+    CHECK(parse_str("     24")->interp()->equals(new NumVal(24)));
 }
 
 TEST_CASE ("parse_print") {

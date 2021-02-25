@@ -18,10 +18,13 @@ typedef enum {
   print_group_add_or_mult
 } print_mode_t;
 
+class Val;
+
+
 class Expr{
 public:
     virtual bool equals(Expr *other) = 0;
-    virtual int interp() = 0;
+    virtual Val* interp() = 0;
     virtual bool has_variable() = 0;
     virtual Expr* subst(std::string str, Expr *other) = 0;
     virtual std::ostream& print(std::ostream& argument) = 0;
@@ -32,12 +35,12 @@ public:
     
 };
 
-class Num: public Expr{
+class NumExpr: public Expr{
 public:
-    int val;
-    Num(int val);
+    int rep;
+    NumExpr(int rep);
     virtual bool equals(Expr *other);
-    virtual int interp();
+    virtual Val* interp();
     virtual bool has_variable();
     virtual Expr* subst(std::string str, Expr *other);
     virtual std::ostream& print(std::ostream& argument);
@@ -45,14 +48,14 @@ public:
     virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS);
 };
 
-class Add: public Expr{
+class AddExpr: public Expr{
 public:
     Expr *lhs;
     Expr *rhs;
     
-    Add(Expr *lhs, Expr *rhs);
+    AddExpr(Expr *lhs, Expr *rhs);
     virtual bool equals(Expr *other);
-    virtual int interp();
+    virtual Val* interp();
     virtual bool has_variable();
     virtual Expr* subst(std::string str, Expr *other);
     virtual std::ostream& print(std::ostream& argument);
@@ -61,13 +64,13 @@ public:
     virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS);
 };
 
-class Mult: public Expr{
+class MultExpr: public Expr{
 public:
     Expr *lhs;
     Expr *rhs;
-    Mult(Expr *lhs, Expr *rhs);
+    MultExpr(Expr *lhs, Expr *rhs);
     virtual bool equals(Expr *other);
-    virtual int interp();
+    virtual Val* interp();
     virtual bool has_variable();
     virtual Expr* subst(std::string str, Expr *other);
     virtual std::ostream& print(std::ostream& argument);
@@ -76,12 +79,12 @@ public:
     virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS);
 };
 
-class Var: public Expr{
+class VarExpr: public Expr{
 public:
     std::string str;
-    Var(std::string str);
+    VarExpr(std::string str);
     virtual bool equals(Expr *other);
-    virtual int interp();
+    virtual Val* interp();
     virtual bool has_variable();
     virtual Expr* subst(std::string str, Expr *other);
     virtual std::ostream& print(std::ostream& argument);
@@ -89,16 +92,16 @@ public:
     virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS);
 };
 
-class _let: public Expr{
+class LetExpr: public Expr{
 public:
     std::string variable;
     Expr *rhs;
     Expr *body;
     //int newLine;
     
-    _let(std::string variable, Expr *rhs, Expr *body);
+    LetExpr(std::string variable, Expr *rhs, Expr *body);
     virtual bool equals(Expr *other);
-    virtual int interp();
+    virtual Val* interp();
     virtual bool has_variable();
     virtual Expr* subst(std::string str, Expr *other);
     virtual std::ostream& print(std::ostream& argument);

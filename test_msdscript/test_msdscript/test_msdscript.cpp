@@ -85,12 +85,12 @@ int main(int argc, const char * argv[]) {
             ExecResult pretty_result_2 = exec_program(2, pretty_argv_2, in);
 
             // USE FOR VISUAL PRINT OUT OF RESULTS
-//            std::cout << "interp1: " << interp_result_1.out << "\n";
-//            std::cout << "interp2: " << interp_result_2.out << "\n";
-//            std::cout << "print1: " << print_result_1.out << "\n";
-//            std::cout << "print2: " << print_result_2.out << "\n";
-//            std::cout << "pretty1: " << pretty_result_1.out << "\n";
-//            std::cout << "pretty2: " <<pretty_result_2.out << "\n";
+            std::cout << "interp1: " << interp_result_1.out << "\n";
+            std::cout << "interp2: " << interp_result_2.out << "\n";
+            std::cout << "print1: " << print_result_1.out << "\n";
+            std::cout << "print2: " << print_result_2.out << "\n";
+            std::cout << "pretty1: " << pretty_result_1.out << "\n";
+            std::cout << "pretty2: " <<pretty_result_2.out << "\n";
             
             // Compare both interps
             if (interp_result_1.out != interp_result_2.out)

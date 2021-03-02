@@ -110,4 +110,49 @@ public:
     //std::string to_string();
 };
 
+class BoolExpr: public Expr{
+public:
+    bool rep;
+    
+    BoolExpr(bool rep);
+    virtual bool equals(Expr *other);
+    virtual Val* interp();
+    virtual bool has_variable();
+    virtual Expr* subst(std::string str, Expr *other);
+    virtual std::ostream& print(std::ostream& argument);
+    virtual std::ostream& pretty_print(std::ostream& argument);
+    virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS);
+};
+
+class EqExpr: public Expr{
+public:
+    Expr *lhs;
+    Expr *rhs;
+    
+    EqExpr(Expr *lhs, Expr *rhs);
+    virtual bool equals(Expr *other);
+    virtual Val* interp();
+    virtual bool has_variable();
+    virtual Expr* subst(std::string str, Expr *other);
+    virtual std::ostream& print(std::ostream& argument);
+    virtual std::ostream& pretty_print(std::ostream& argument);
+    virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS);
+};
+
+
+class IfExpr: public Expr{
+public:
+    Expr *_if;
+    Expr *_then;
+    Expr *_else;
+    
+    IfExpr(Expr *_if, Expr *_then, Expr *_else);
+    virtual bool equals(Expr *other);
+    virtual Val* interp();
+    virtual bool has_variable();
+    virtual Expr* subst(std::string str, Expr *other);
+    virtual std::ostream& print(std::ostream& argument);
+    virtual std::ostream& pretty_print(std::ostream& argument);
+    virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS);
+};
 #endif /* expr_hpp */

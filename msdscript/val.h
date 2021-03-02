@@ -38,4 +38,14 @@ public:
 //    virtual std::ostream& pretty_print(std::ostream& argument);
 };
 
+
+class BoolVal: public Val{
+public:
+    bool rep;
+    BoolVal(bool rep);
+    virtual Expr* to_expr();
+    virtual Val* add_to(Val* other_val);
+    virtual Val* mult_by(Val* other_val);
+    virtual bool equals(Val* other);
+};
 #endif /* val_hpp */

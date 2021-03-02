@@ -67,6 +67,38 @@ bool NumVal::equals(Val* other){
         return (this->rep == other_numval->rep);
 }
 
+BoolVal::BoolVal(bool rep) {
+    this->rep = rep;
+}
+
+Expr* BoolVal::to_expr(){
+    return new BoolExpr(this->rep);
+}
+
+Val* BoolVal::add_to(Val* other_val){
+    NumVal *other_num = dynamic_cast<NumVal*>(other_val);
+    if (other_num == NULL)
+        throw std::runtime_error("cannot add with boolean");
+    return new NumVal(rep + other_num->rep);
+}
+
+Val* BoolVal::mult_by(Val* other_val){
+    NumVal *other_num = dynamic_cast<NumVal*>(other_val);
+    if (other_num == NULL)
+        throw std::runtime_error("cannot multiply with boolean");
+    return new NumVal(rep * other_num->rep);
+}
+
+bool BoolVal::equals(Val* other){
+    BoolVal *other_boolval = dynamic_cast<BoolVal*>(other);
+    if (other_boolval == NULL)
+        return false;
+    else
+        return (this->rep == other_boolval->rep);
+}
+
+
+
 TEST_CASE ("NumVal equals") {
     CHECK((new AddExpr((new MultExpr(new NumExpr(5), new LetExpr("x", new NumExpr(5), new VarExpr("x")))), new NumExpr(1)))->interp()->equals(NULL) == false);
     CHECK((new AddExpr(new LetExpr("x", new NumExpr(5), new VarExpr("x")), new NumExpr(1)))->interp() ->equals(NULL) == false);

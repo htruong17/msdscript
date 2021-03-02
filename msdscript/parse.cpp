@@ -144,6 +144,7 @@ Expr *parse_let(std::istream &in){
 
 bool parse_keyword(std::istream &in){
     std::string keyword;
+    int start = 0;
     skip_whitespace(in);
     int c = in.peek();
     if(c == '='){
@@ -154,12 +155,35 @@ bool parse_keyword(std::istream &in){
         consume(in, '_');
         c = in.peek();
         if (c == 'l')
-            keyword = "let ";
-        else if (c == 'i')
-            keyword = "in ";
+            keyword = "let";
+        else if (c == 'i'){
+            consume(in, 'i');
+            start ++;
+            c = in.peek();
+            if (c == 'n')
+                keyword = "in";
+            else if (c == 'f')
+                keyword = "if";
+            else
+                return false;
+        }else if (c == 't'){
+            consume(in, 't');
+            start ++;
+            c = in.peek();
+            if (c == 'h')
+                keyword = "then";
+            else if (c == 'r')
+                keyword = "true";
+            else
+                return false;
+        }
+        else if (c == 'e')
+            keyword = "else";
+        else if (c == 'f')
+            keyword = "false";
         else
             return false;
-        for (int i=0; i < keyword.size(); i++){
+        for (int i=start; i < keyword.size(); i++){
             c = in.peek();
             if(c == keyword[i]){
                 consume(in, keyword[i]);
@@ -167,11 +191,60 @@ bool parse_keyword(std::istream &in){
                 return false;
             }
         }
-        return true;
+        c = in.peek();
+        if(!isalpha(c))
+            return true;
+        else
+            return false;
     } else
         return false;
 }
 
+//Expr *parse_if(std::istream &in){
+//    Expr *_if;
+//    Expr *_then;
+//    Expr *_else;
+//    if(parse_keyword(in) == true){
+//        _if = parse_var(in);
+//    }
+//    else
+//        throw std::runtime_error("invalid input");
+//    if(parse_keyword(in) == true)
+//        _then = parse_expr(in);
+//    else
+//        throw std::runtime_error("invalid input");
+//    if(parse_keyword(in) == true)
+//        _else = parse_expr(in);
+//    else
+//        throw std::runtime_error("invalid input");
+//    return new IfExpr(_if, _then, _else);
+//}
+//
+//Expr *parse_eq(std::istream &in);
+//
+//Expr *parse_bool(std::istream &in){
+//    std::string keyword;
+//    skip_whitespace(in);
+//    int c = in.peek();
+//    if (c == '_'){
+//        consume(in, '_');
+//        c = in.peek();
+//        if (c == 'f')
+//            keyword = "false";
+//        else if (c == 't')
+//            keyword = "true";
+//        for (int i=0; i < keyword.size(); i++){
+//            c = in.peek();
+//            if(c == keyword[i]){
+//                consume(in, keyword[i]);
+//            } else {
+//                break;
+//            }
+//        }
+//        int c = in.peek();
+//        if (!isalpha(c)){
+//            return 
+//}
 
 TEST_CASE ("parse_interp") {
     std::string addition = "24+8";

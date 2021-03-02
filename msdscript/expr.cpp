@@ -328,6 +328,224 @@ void LetExpr::pretty_print_at(print_mode_t mode, std::ostream& argument, int new
 
 }
 
+BoolExpr::BoolExpr(bool rep) {
+    this->rep = rep;
+}
+
+// Method to compare if this Num expression is equal to another expression
+bool BoolExpr::equals(Expr *other){
+    BoolExpr *other_bool = dynamic_cast<BoolExpr*>(other);
+    if (other_bool == NULL)
+        return false;
+    else
+        return (this->rep == other_bool->rep);
+}
+
+// Returns the interpreted int value of the Num
+Val* BoolExpr::interp(){
+    return new BoolVal(this->rep);
+}
+
+// Returns false because a Num is not a variable
+// Nor does it contain a variable
+bool BoolExpr::has_variable(){
+    return false;
+}
+
+// Returns this because it doesn't have a variable
+// for comparison
+Expr* BoolExpr::subst(std::string subStr, Expr *other){
+    return this;
+};
+
+// Prints number value to ostream
+std::ostream& BoolExpr::print(std::ostream& argument){
+    if(this->rep == 0)
+        return argument << "_false";
+    else
+        return argument << "_true";
+}
+
+// Prints number value to ostream (for pretty print)
+std::ostream& BoolExpr::pretty_print(std::ostream& argument){
+    if(this->rep == 0)
+        return argument << "_false";
+    else
+        return argument << "_true";
+}
+
+// Helper function to assist with pretty_print for Num Expressions
+void BoolExpr::pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS){
+    if(this->rep == 0)
+        argument << "_false";
+    else
+        argument << "_true";
+}
+
+// Add constructor
+EqExpr::EqExpr(Expr *lhs, Expr *rhs) {
+    this->lhs = lhs;
+    this->rhs = rhs;
+}
+
+// Method to compare if this Add expression is equal to another expression
+bool EqExpr::equals(Expr *other){
+    EqExpr *other_eq = dynamic_cast<EqExpr*>(other);
+    if (other_eq == NULL)
+        return false;
+    else
+        return (this->lhs->equals(other_eq->lhs) && this->rhs->equals(other_eq->rhs));
+}
+
+// Returns the sum value as an int
+Val* EqExpr::interp(){
+    if (lhs->interp()->equals(rhs->interp()))
+        return new BoolVal(true);
+    else
+        return new BoolVal(false);
+}
+
+// If any of the parameters for Add is a variable
+// then it returns true
+bool EqExpr::has_variable(){
+    return (lhs->has_variable() || rhs->has_variable());
+}
+
+// Returns a new Add expr with substituted parameters if applicable
+Expr* EqExpr::subst(std::string subStr, Expr *other){
+    Expr *new_lhs = lhs->subst(subStr, other);
+    Expr *new_rhs = rhs->subst(subStr, other);
+    return new EqExpr(new_lhs,new_rhs);
+};
+
+// Print Addition expr to ostream
+std::ostream& EqExpr::print(std::ostream& argument){
+    
+    argument << "(";
+    this->lhs->print(argument);
+    argument << "==";
+    this->rhs->print(argument);
+    argument << ")";
+    return argument;
+}
+
+// Helper function to assist with pretty_print for Add Expressions
+void EqExpr::pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS){
+    if (mode >= print_group_add)
+        argument << "(";
+    this->lhs->pretty_print_at(print_group_add, argument, newLineLocation, false);
+    argument << " == ";
+    this->rhs->pretty_print_at(print_group_none, argument, newLineLocation, alwaysRHS);
+    if (mode >= print_group_add)
+        argument << ")";
+}
+
+// Print function that uses parentheses only when needed
+// For Addition
+std::ostream& EqExpr::pretty_print(std::ostream& argument){
+    this->pretty_print_at(print_group_none, argument, 0, true);
+    return std::cout;
+}
+
+IfExpr::IfExpr(Expr *_if, Expr *_then, Expr *_else) {
+    this->_if = _if;
+    this->_then = _then;
+    this->_else = _else;
+};
+
+// Method to compare if this _let expression is equal to another expression
+bool IfExpr::equals(Expr *other){
+    IfExpr *other_if = dynamic_cast<IfExpr*>(other);
+    if (other_if == NULL)
+        return false;
+    else
+        return (this->_if->equals(other_if->_if) && this->_then->equals(other_if->_then) && (this->_else->equals(other_if->_else)));
+}
+
+// Returns the calculated value as an int
+Val* IfExpr::interp(){
+    if(_if->interp()->equals(new BoolVal(true)))
+        return _then->interp();
+    else if(_if->interp()->equals(new BoolVal(false)))
+        return _else->interp();
+    else
+        throw std::runtime_error("If is a non-boolean value");
+}
+
+// If the body parameter for _let has a variable
+// then it returns true
+bool IfExpr::has_variable(){
+    //return body->has_variable();
+    return false;
+}
+
+// Returns a new _let expr with substituted parameters if applicable
+Expr* IfExpr::subst(std::string subStr, Expr *other){
+//    if(subStr == variable){
+//        Expr *new_rhs = rhs->subst(subStr,other);
+//        return new LetExpr(variable,new_rhs, body);
+//    }
+//    else {
+//        Expr *new_body = body->subst(subStr, other);
+//        return new LetExpr(variable,rhs, new_body);
+//    }
+
+//    Expr *new_rhs = _then->subst(subStr,other);
+//    Expr *new_body = _else;
+//    if(subStr != _if){
+//        new_body = _else->subst(subStr, other);
+//    }
+//    return new LetExpr(_if,new_rhs, new_body);
+    //return NULL;
+    return this;
+      
+};
+
+// Print _let expr to ostream
+std::ostream& IfExpr::print(std::ostream& argument){
+    argument << "(_if ";
+    this->_if->print(argument);
+    argument << " _then ";
+    this->_then->print(argument);
+    argument << " _else ";
+    this->_else->print(argument);
+    argument << ")";
+    return argument;
+}
+
+// Print function that uses parentheses only when needed
+// For Multiplcation
+std::ostream& IfExpr::pretty_print(std::ostream& argument){
+    this->pretty_print_at(print_group_none, argument, 0, true);
+    return argument;
+}
+
+// Helper function to assist with pretty_print for _let Expressions
+void IfExpr::pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS){
+    if (mode != print_group_none && !alwaysRHS)
+       argument << "(";
+    int num1 = (int)argument.tellp();
+    argument << "_if ";
+    this->_if->pretty_print(argument);
+    argument << "\n";
+    int newLine = (int)argument.tellp();
+    argument << std::string(num1-newLineLocation, ' ');
+    argument << "_then ";
+    this->_then->pretty_print_at(print_group_none, argument, newLine, alwaysRHS);
+    argument << "\n";
+    argument << std::string(num1-newLineLocation, ' ');
+    argument << "_else ";
+    this->_else->pretty_print_at(print_group_none, argument, newLine, alwaysRHS);
+    if (mode != print_group_none && !alwaysRHS)
+         argument << ")";
+
+}
+
+
+
+
+
+
 // Different Exprs for testing purposes
 NumExpr *null = NULL;
 NumExpr *num1 = new NumExpr(1);
@@ -667,4 +885,74 @@ TEST_CASE( "more subst" ) {
   // _in  z + 32
 
 }
+
+TEST_CASE ("boolean") {
+    CHECK((new BoolExpr(false))->interp()->equals(new BoolVal(false)));
+    CHECK((new BoolExpr(true))->interp()->equals(new BoolVal(true)));
+    CHECK((new BoolExpr(true))->equals(new BoolExpr(true)));
+    CHECK((new BoolExpr(true))->equals(NULL) == false);
+    CHECK((new BoolExpr(true))->subst("x", new BoolExpr(false)));
+    CHECK((new BoolExpr(true))->has_variable() == false);
+    CHECK((new BoolExpr(true))->to_string() == "_true");
+    CHECK((new BoolExpr(false))->to_string() == "_false");
+    
+    CHECK((new BoolExpr(true))->to_pretty_string() == "_true");
+    CHECK((new BoolExpr(false))->to_pretty_string() == "_false");
+    
+    
+};
+
+TEST_CASE ("equal interp") {
+    CHECK((new EqExpr(new NumExpr(8),new NumExpr(8)))->interp()->equals(new BoolVal(true)));
+    CHECK((new EqExpr(new NumExpr(24),new NumExpr(8)))->interp()->equals(new BoolVal(false)));
+    CHECK((new EqExpr(new BoolExpr(true),new BoolExpr(true)))->interp()->equals(new BoolVal(true)));
+    CHECK((new EqExpr(new BoolExpr(false),new BoolExpr(true)))->interp()->equals(new BoolVal(false)));
+    CHECK((new EqExpr(new BoolExpr(false),new BoolExpr(false)))->interp()->equals(new BoolVal(true)));
+    CHECK((new EqExpr(new BoolExpr(false),new BoolExpr(false)))->interp()->equals(new BoolVal(true)));
+    
+};
+
+TEST_CASE ("eqExpr") {
+    CHECK((new EqExpr(new NumExpr(8),new NumExpr(8)))->equals((new EqExpr(new NumExpr(8),new NumExpr(8)))));
+    CHECK((new EqExpr(new NumExpr(8),new NumExpr(8)))->equals(NULL) == false);
+    CHECK((new EqExpr(new NumExpr(8),new NumExpr(8)))->has_variable() == false);
+    CHECK((new EqExpr(new NumExpr(8),new NumExpr(8)))->subst("x", new NumExpr(2))->equals(new EqExpr(new NumExpr(8),new NumExpr(8))));
+    
+};
+
+TEST_CASE ("IfExp") {
+    
+    
+    std::ostringstream ss;
+    
+    CHECK((new LetExpr("same", new EqExpr(new NumExpr(1),new NumExpr(2)), new IfExpr(new EqExpr(new NumExpr(1),new NumExpr(2)), new AddExpr(new BoolExpr(false), new NumExpr(5)),new NumExpr(88)  )))->interp()->equals(new NumVal(88)));
+    CHECK((new LetExpr("same", new EqExpr(new NumExpr(1),new NumExpr(2)), new IfExpr(new EqExpr(new NumExpr(1),new NumExpr(2)), new AddExpr(new BoolExpr(true), new NumExpr(5)),new NumExpr(88)  )))->interp()->equals(new NumVal(88)));
+    //CHECK((new BoolExpr(true))->interp()->equals(new BoolVal(true)));
+    
+    CHECK((new LetExpr("same", new EqExpr(new NumExpr(1),new NumExpr(2)), new IfExpr(new EqExpr(new NumExpr(1),new NumExpr(2)), new AddExpr(new BoolExpr(false), new NumExpr(5)),new NumExpr(88)  )))->to_string() == "(_let same=(1==2) _in (_if (1==2) _then (_false+5) _else 88))");
+    ss.str("");
+    ss.clear();
+    
+    CHECK((new LetExpr("same", new EqExpr(new NumExpr(1),new NumExpr(2)), new IfExpr(new EqExpr(new NumExpr(1),new NumExpr(2)), new AddExpr(new BoolExpr(false), new NumExpr(5)),new NumExpr(88)  )))->to_pretty_string() == "_let same = 1 == 2\n_in  _if 1 == 2\n     _then _false + 5\n     _else 88");
+    ss.str("");
+    ss.clear();
+    
+    CHECK((new IfExpr(new EqExpr(new NumExpr(1),new NumExpr(2)), new AddExpr(new BoolExpr(false), new NumExpr(5)),new NumExpr(88)))->has_variable() == false);
+    
+    CHECK((new IfExpr(new EqExpr(new NumExpr(1),new NumExpr(2)), new AddExpr(new BoolExpr(false), new NumExpr(5)),new NumExpr(88)))->equals((new IfExpr(new EqExpr(new NumExpr(1),new NumExpr(2)), new AddExpr(new BoolExpr(false), new NumExpr(5)),new NumExpr(88)))));
+    
+    CHECK((new IfExpr(new EqExpr(new NumExpr(1),new NumExpr(2)), new AddExpr(new BoolExpr(true), new NumExpr(5)),new NumExpr(88)))->equals((new IfExpr(new EqExpr(new NumExpr(1),new NumExpr(2)), new AddExpr(new BoolExpr(false), new NumExpr(5)),new NumExpr(88)))) == false);
+    
+    CHECK((new IfExpr(new EqExpr(new NumExpr(1),new NumExpr(2)), new AddExpr(new BoolExpr(true), new NumExpr(5)),new NumExpr(88)))->equals(NULL) == false);
+    
+    CHECK((new IfExpr(new EqExpr(new NumExpr(1),new NumExpr(1)), new NumExpr(5),new NumExpr(88)))->interp()->equals(new NumVal(5)));
+    
+    CHECK_THROWS_WITH(((new IfExpr(new AddExpr(new NumExpr(1),new NumExpr(1)), new NumExpr(5),new NumExpr(88)))->interp()->equals(new NumVal(5))), "If is a non-boolean value");
+    
+    
+    
+    //std::cout << "Hello" << std::endl;
+};
+
+
 

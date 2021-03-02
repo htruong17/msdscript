@@ -476,29 +476,16 @@ Val* IfExpr::interp(){
 // then it returns true
 bool IfExpr::has_variable(){
     //return body->has_variable();
-    return false;
+    return (_if->has_variable() || _then->has_variable() || _else->has_variable());
 }
 
 // Returns a new _let expr with substituted parameters if applicable
 Expr* IfExpr::subst(std::string subStr, Expr *other){
-//    if(subStr == variable){
-//        Expr *new_rhs = rhs->subst(subStr,other);
-//        return new LetExpr(variable,new_rhs, body);
-//    }
-//    else {
-//        Expr *new_body = body->subst(subStr, other);
-//        return new LetExpr(variable,rhs, new_body);
-//    }
 
-//    Expr *new_rhs = _then->subst(subStr,other);
-//    Expr *new_body = _else;
-//    if(subStr != _if){
-//        new_body = _else->subst(subStr, other);
-//    }
-//    return new LetExpr(_if,new_rhs, new_body);
-    //return NULL;
-    return this;
-      
+    Expr *new_if = _if->subst(subStr,other);
+    Expr *new_then = _then->subst(subStr,other);
+    Expr *new_else = _else->subst(subStr,other);
+    return new IfExpr(new_if,new_then, new_else);
 };
 
 // Print _let expr to ostream
@@ -898,6 +885,15 @@ TEST_CASE ("boolean") {
     
     CHECK((new BoolExpr(true))->to_pretty_string() == "_true");
     CHECK((new BoolExpr(false))->to_pretty_string() == "_false");
+    
+    CHECK_THROWS_WITH((new AddExpr(new NumExpr(6),new BoolExpr(true)))->interp(), "add of non-number");
+    
+    CHECK_THROWS_WITH((new MultExpr(new NumExpr(6),new BoolExpr(true)))->interp(), "mult of non-number");
+    
+    CHECK_THROWS_WITH((new AddExpr(new BoolExpr(true), new NumExpr(6)))->interp(), "cannot add with boolean");
+    CHECK_THROWS_WITH((new MultExpr(new BoolExpr(true), new NumExpr(6)))->interp(), "cannot multiply with boolean");
+   
+    
     
     
 };

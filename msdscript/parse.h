@@ -21,11 +21,11 @@ Expr *parse_multicand(std::istream &in);
 Expr *parse_str(std::string s);
 Expr *parse_var(std::istream &in);
 Expr *parse_let(std::istream &in);
-bool parse_keyword(std::istream &in);
+std::string parse_keyword(std::istream &in);
 Expr *parse(std::istream &in);
-//Expr *parse_if(std::istream &in);
-//Expr *parse_eq(std::istream &in);
-//Expr *parse_bool(std::istream &in);
+Expr *parse_if(std::istream &in);
+Expr *parse_comparg(std::istream &in);
+
 
 
 #endif /* parse_hpp */

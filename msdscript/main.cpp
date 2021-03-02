@@ -20,7 +20,10 @@
 int main(int argc, char **argv) {
     try {
         //Catch::Session().run(1, argv);
-        use_arguments(argc, argv);
+        //use_arguments(argc, argv);
+        bool one = true;
+        bool two = true;
+        std::cout << one + two << std::endl;
         return 0;
     } catch (std::runtime_error exn) {
         std::cerr <<exn.what() << "\n";

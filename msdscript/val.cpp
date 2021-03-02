@@ -76,17 +76,11 @@ Expr* BoolVal::to_expr(){
 }
 
 Val* BoolVal::add_to(Val* other_val){
-    NumVal *other_num = dynamic_cast<NumVal*>(other_val);
-    if (other_num == NULL)
-        throw std::runtime_error("cannot add with boolean");
-    return new NumVal(rep + other_num->rep);
+    throw std::runtime_error("cannot add with boolean");
 }
 
 Val* BoolVal::mult_by(Val* other_val){
-    NumVal *other_num = dynamic_cast<NumVal*>(other_val);
-    if (other_num == NULL)
-        throw std::runtime_error("cannot multiply with boolean");
-    return new NumVal(rep * other_num->rep);
+    throw std::runtime_error("cannot multiply with boolean");
 }
 
 bool BoolVal::equals(Val* other){
@@ -109,6 +103,10 @@ TEST_CASE ("NumVal add_to") {
     CHECK_THROWS_WITH( (new AddExpr(new NumExpr(5),new NumExpr(2)))->interp()->mult_by(NULL),"mult of non-number");
     
     //CHECK((new MultExpr(new NumExpr(5), NULL))->interp());
+}
+
+TEST_CASE ("Bool Val Equals") {
+    CHECK((new BoolVal(true))->equals(NULL) == false);
 }
 
 //std::ostringstream ss;

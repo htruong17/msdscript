@@ -67,7 +67,17 @@ Expr *parse_multicand(std::istream &in){
     else if (isalpha(c))
         return parse_var(in);
     else if(c == '_'){
-        return parse_let(in);
+        std::string keyword = parse_keyword(in);
+        if (keyword == "_let")
+            return parse_let(in);
+        else if(keyword == "_false")
+            return new BoolExpr(false);
+        else if(keyword == "_true")
+            return new BoolExpr(true);
+        else if(keyword == "_if")
+            return parse_if(in);
+        else
+           throw std::runtime_error("invalid input");
     }
     else {
         consume(in, c);
@@ -84,19 +94,38 @@ Expr *parse_addend(std::istream &in){
         consume(in, '*');
         Expr *rhs = parse_addend(in);
         return new MultExpr(e, rhs);
-    } else
+    }
+    else
         return e;
 }
 
-static Expr *parse_expr(std::istream &in) {
+Expr *parse_comparg(std::istream &in){
     Expr *e;
     e = parse_addend(in);
     skip_whitespace(in);
     int c = in.peek();
     if (c == '+') {
         consume(in, '+');
-        Expr *rhs = parse_expr(in);
+        Expr *rhs = parse_comparg(in);
         return new AddExpr(e, rhs);
+    } else
+        return e;
+}
+
+static Expr *parse_expr(std::istream &in) {
+    Expr *e;
+    e = parse_comparg(in);
+    skip_whitespace(in);
+    int c = in.peek();
+    if (c == '=') {
+        consume(in, '=');
+        int c = in.peek();
+        if (c == '=') {
+            consume(in, '=');
+            Expr *rhs = parse_expr(in);
+            return new EqExpr(e, rhs);
+        }
+        throw std::runtime_error("invalid comparg");
     } else
         return e;
 }
@@ -126,125 +155,59 @@ Expr *parse_let(std::istream &in){
     Expr *var;
     Expr *rhs;
     Expr *body;
-    if(parse_keyword(in) == true){
-        var = parse_var(in);
-    }
-    else
-        throw std::runtime_error("invalid input");
-    if(parse_keyword(in) == true)
+    // _let keyword was checked in multicand already
+    var = parse_var(in);
+    if(parse_keyword(in) == "=")
         rhs = parse_expr(in);
     else
-        throw std::runtime_error("invalid input");
-    if(parse_keyword(in) == true)
+        throw std::runtime_error("expecting =");
+    if(parse_keyword(in) == "_in")
         body = parse_expr(in);
     else
-        throw std::runtime_error("invalid input");
+        throw std::runtime_error("expecting _in");
     return new LetExpr(var->to_string(), rhs, body);
 }
 
-bool parse_keyword(std::istream &in){
-    std::string keyword;
-    int start = 0;
+std::string parse_keyword(std::istream &in){
+    std::string keyword = "";
     skip_whitespace(in);
     int c = in.peek();
     if(c == '='){
         consume(in, '=');
-        return true;
+        keyword += '=';
+        return keyword;
     }
     else if (c == '_'){
         consume(in, '_');
+        keyword += '_';
+    }
+    c = in.peek();
+    while(isalpha(c)){
+        consume(in, c);
+        keyword += c;
         c = in.peek();
-        if (c == 'l')
-            keyword = "let";
-        else if (c == 'i'){
-            consume(in, 'i');
-            start ++;
-            c = in.peek();
-            if (c == 'n')
-                keyword = "in";
-            else if (c == 'f')
-                keyword = "if";
-            else
-                return false;
-        }else if (c == 't'){
-            consume(in, 't');
-            start ++;
-            c = in.peek();
-            if (c == 'h')
-                keyword = "then";
-            else if (c == 'r')
-                keyword = "true";
-            else
-                return false;
-        }
-        else if (c == 'e')
-            keyword = "else";
-        else if (c == 'f')
-            keyword = "false";
-        else
-            return false;
-        for (int i=start; i < keyword.size(); i++){
-            c = in.peek();
-            if(c == keyword[i]){
-                consume(in, keyword[i]);
-            } else {
-                return false;
-            }
-        }
-        c = in.peek();
-        if(!isalpha(c))
-            return true;
-        else
-            return false;
-    } else
-        return false;
+    }
+    return keyword;
 }
 
-//Expr *parse_if(std::istream &in){
-//    Expr *_if;
-//    Expr *_then;
-//    Expr *_else;
-//    if(parse_keyword(in) == true){
-//        _if = parse_var(in);
-//    }
-//    else
-//        throw std::runtime_error("invalid input");
-//    if(parse_keyword(in) == true)
-//        _then = parse_expr(in);
-//    else
-//        throw std::runtime_error("invalid input");
-//    if(parse_keyword(in) == true)
-//        _else = parse_expr(in);
-//    else
-//        throw std::runtime_error("invalid input");
-//    return new IfExpr(_if, _then, _else);
-//}
-//
-//Expr *parse_eq(std::istream &in);
-//
-//Expr *parse_bool(std::istream &in){
-//    std::string keyword;
-//    skip_whitespace(in);
-//    int c = in.peek();
-//    if (c == '_'){
-//        consume(in, '_');
-//        c = in.peek();
-//        if (c == 'f')
-//            keyword = "false";
-//        else if (c == 't')
-//            keyword = "true";
-//        for (int i=0; i < keyword.size(); i++){
-//            c = in.peek();
-//            if(c == keyword[i]){
-//                consume(in, keyword[i]);
-//            } else {
-//                break;
-//            }
-//        }
-//        int c = in.peek();
-//        if (!isalpha(c)){
-//            return 
-//}
+Expr *parse_if(std::istream &in){
+    Expr *_if;
+    Expr *_then;
+    Expr *_else;
+    _if = parse_expr(in);
+    if(parse_keyword(in) == "_then")
+        _then = parse_expr(in);
+    else
+        throw std::runtime_error("expecting _then");
+    if(parse_keyword(in) == "_else")
+        _else = parse_expr(in);
+    else
+        throw std::runtime_error("expecting _else");
+    return new IfExpr(_if, _then, _else);
+}
+
+
+
 
 TEST_CASE ("parse_interp") {
     std::string addition = "24+8";
@@ -257,12 +220,15 @@ TEST_CASE ("parse_interp") {
     CHECK_THROWS_WITH(parse_str("(_let x=5 _in ((_let y=3 _in (y+2))+x)")->interp(), "missing close parenthesis");
     CHECK_THROWS_WITH(parse_str("! % (3"), "invalid input");
     CHECK_THROWS_WITH(parse_str("(_lets x=5 _in ((_let y=3 _in (y+2))+x)")->interp(), "invalid input");
-    CHECK_THROWS_WITH(parse_str("(_let x-5 _in ((_let y=3 _in (y+2))+x)")->interp(), "invalid input");
-    CHECK_THROWS_WITH(parse_str("(_let x=5 _in ((_let y=3 _ins (y+2))+x)")->interp(), "invalid input");
+    CHECK_THROWS_WITH(parse_str("(_let x-5 _in ((_let y=3 _in (y+2))+x)")->interp(), "expecting =");
+    CHECK_THROWS_WITH(parse_str("(_let x=5 _in ((_let y=3 _ins (y+2))+x)")->interp(), "expecting _in");
     CHECK_THROWS_WITH(parse_str("(_for x=5 _in ((_let y=3 _in (y+2))+x)")->interp(), "invalid input");
     CHECK_THROWS_WITH(consume(in_stream, '2'), "consume mismatch");
     CHECK(parse_str("8")->interp()->equals(new NumVal(8)));
     CHECK(parse_str("_let woof=6 _in woof*3")->interp()->equals(new NumVal(18)));
+    CHECK_THROWS_WITH((parse_str("_let same = 1 = 2 _in _if 1 ==2 _then _false +5 _else 88"))->interp(),"invalid comparg");
+    CHECK_THROWS_WITH((parse_str("_let same = 1 == 2 _in _if 1 ==2 _true _false +5 _else 88"))->interp(),"expecting _then");
+    CHECK_THROWS_WITH((parse_str("_let same = 1 == 2 _in _if 1 ==2 _then _false +5 _elses 88"))->interp(),"expecting _else");
 }
 
 TEST_CASE ("parse_interp_spacing") {
@@ -279,6 +245,9 @@ TEST_CASE ("parse_print") {
     CHECK(parse_str(" (1 + 2) + 3 ")->to_string() == "((1+2)+3)");
     CHECK_THROWS_WITH(parse_str("((2+2)+(1+3)")->to_string(), "missing close parenthesis");
     CHECK(parse_str("     24")->to_string() == "24");
+    CHECK(parse_str("_false")->to_string() == "_false");
+    CHECK(parse_str("_true")->to_string() == "_true");
+    CHECK(parse_str("_let same = 1 == 2 _in _if 1 ==2 _then _false +5 _else 88")->to_string() == "(_let same=(1==2) _in (_if (1==2) _then (_false+5) _else 88))");
 
     
 }

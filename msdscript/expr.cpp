@@ -933,6 +933,12 @@ TEST_CASE ("IfExp") {
     ss.str("");
     ss.clear();
     
+    CHECK((new AddExpr((new IfExpr(new EqExpr(new NumExpr(1),new NumExpr(2)), new AddExpr(new BoolExpr(false), new NumExpr(5)),new NumExpr(88))), new NumExpr(2)))->to_pretty_string() == "(_if 1 == 2\n _then _false + 5\n _else 88) + 2");
+    
+    CHECK((new IfExpr(new EqExpr(new NumExpr(1),new NumExpr(2)), new AddExpr(new BoolExpr(false), new NumExpr(5)),new NumExpr(88)))->to_pretty_string() == "_if 1 == 2\n_then _false + 5\n_else 88");
+    
+    CHECK((new MultExpr((new IfExpr(new AddExpr(new EqExpr(new NumExpr(1),new NumExpr(2)), new NumExpr(24)), new AddExpr(new BoolExpr(true), new NumExpr(5)),new NumExpr(88))), new NumExpr(2)))->to_pretty_string() == "(_if (1 == 2) + 24\n _then _true + 5\n _else 88) * 2");
+    
     CHECK((new IfExpr(new EqExpr(new NumExpr(1),new NumExpr(2)), new AddExpr(new BoolExpr(false), new NumExpr(5)),new NumExpr(88)))->has_variable() == false);
     
     CHECK((new IfExpr(new EqExpr(new NumExpr(1),new NumExpr(2)), new AddExpr(new BoolExpr(false), new NumExpr(5)),new NumExpr(88)))->equals((new IfExpr(new EqExpr(new NumExpr(1),new NumExpr(2)), new AddExpr(new BoolExpr(false), new NumExpr(5)),new NumExpr(88)))));
@@ -944,8 +950,6 @@ TEST_CASE ("IfExp") {
     CHECK((new IfExpr(new EqExpr(new NumExpr(1),new NumExpr(1)), new NumExpr(5),new NumExpr(88)))->interp()->equals(new NumVal(5)));
     
     CHECK_THROWS_WITH(((new IfExpr(new AddExpr(new NumExpr(1),new NumExpr(1)), new NumExpr(5),new NumExpr(88)))->interp()->equals(new NumVal(5))), "If is a non-boolean value");
-    
-    
     
     //std::cout << "Hello" << std::endl;
 };

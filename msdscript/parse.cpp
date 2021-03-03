@@ -229,6 +229,7 @@ TEST_CASE ("parse_interp") {
     CHECK_THROWS_WITH((parse_str("_let same = 1 = 2 _in _if 1 ==2 _then _false +5 _else 88"))->interp(),"invalid comparg");
     CHECK_THROWS_WITH((parse_str("_let same = 1 == 2 _in _if 1 ==2 _true _false +5 _else 88"))->interp(),"expecting _then");
     CHECK_THROWS_WITH((parse_str("_let same = 1 == 2 _in _if 1 ==2 _then _false +5 _elses 88"))->interp(),"expecting _else");
+    CHECK(parse_str("(1+3) == 4")->interp()->equals(new BoolVal(true)));
 }
 
 TEST_CASE ("parse_interp_spacing") {

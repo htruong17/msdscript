@@ -67,6 +67,10 @@ bool NumVal::equals(Val* other){
         return (this->rep == other_numval->rep);
 }
 
+Val* NumVal::call(Val *actual_arg){
+    throw std::runtime_error("call error for NumVal");
+}
+
 BoolVal::BoolVal(bool rep) {
     this->rep = rep;
 }
@@ -91,6 +95,42 @@ bool BoolVal::equals(Val* other){
         return (this->rep == other_boolval->rep);
 }
 
+Val* BoolVal::call(Val *actual_arg){
+    throw std::runtime_error("call error for BoolVal");
+}
+
+FunVal::FunVal(std::string formal_arg, Expr *body){
+    this->formal_arg = formal_arg;
+    this->body = body;
+}
+
+Expr* FunVal::to_expr(){
+    return new FunExpr(this->formal_arg, this->body);
+}
+
+Val* FunVal::add_to(Val* other_val){
+    throw std::runtime_error("add error of FunVal");
+}
+
+Val* FunVal::mult_by(Val* other_val){
+    throw std::runtime_error("mult error for FunVal");
+}
+
+bool FunVal::equals(Val* other){
+    FunVal *other_funval = dynamic_cast<FunVal*>(other);
+    if (other_funval == NULL)
+        return false;
+    else
+        return (this->formal_arg == other_funval->formal_arg && this->body->equals(other_funval->body));
+}
+
+Val* FunVal::call(Val *actual_arg){
+//    FunVal *other_fun = dynamic_cast<FunVal*>(actual_arg);
+//    if (other_fun == NULL)
+//        throw std::runtime_error("Call error for FunVal");
+    return this->body->subst(this->formal_arg, actual_arg->to_expr())->interp();
+    //return this->body
+}
 
 
 TEST_CASE ("NumVal equals") {

@@ -49,7 +49,7 @@ Expr *parse_num(std::istream &in) {
     return new NumExpr(n);
 }
 
-Expr *parse_multicand(std::istream &in){
+Expr *parse_inner(std::istream &in){
     skip_whitespace(in);
 
     int c = in.peek();
@@ -76,6 +76,8 @@ Expr *parse_multicand(std::istream &in){
             return new BoolExpr(true);
         else if(keyword == "_if")
             return parse_if(in);
+        else if(keyword == "_fun")
+            return parse_fun(in);
         else
            throw std::runtime_error("invalid input");
     }
@@ -83,6 +85,24 @@ Expr *parse_multicand(std::istream &in){
         consume(in, c);
         throw std::runtime_error("invalid input");
     }
+}
+
+Expr *parse_multicand(std::istream &in){
+    Expr *e;
+    e = parse_inner(in);
+    skip_whitespace(in);
+    int c = in.peek();
+    while(c == '(') {
+        //skip_whitespace(in);
+        consume(in, '(');
+        Expr *actual_arg = parse_expr(in);
+        skip_whitespace(in);
+        consume(in, ')');
+        
+        e = new CallExpr(e, actual_arg);
+        c = in.peek();
+    }
+    return e;
 }
 
 Expr *parse_addend(std::istream &in){
@@ -187,6 +207,14 @@ std::string parse_keyword(std::istream &in){
         keyword += c;
         c = in.peek();
     }
+    if (c == '('){
+        consume(in, '(');
+        keyword += '(';
+    }
+    if (c == ')'){
+        consume(in, ')');
+        keyword += ')';
+    }
     return keyword;
 }
 
@@ -206,7 +234,20 @@ Expr *parse_if(std::istream &in){
     return new IfExpr(_if, _then, _else);
 }
 
-
+Expr *parse_fun(std::istream &in){
+    Expr *formal_arg;
+    Expr *body;
+    skip_whitespace(in);
+    if(parse_keyword(in) == "(")
+        formal_arg = parse_var(in);
+    else
+        throw std::runtime_error("expecting (");
+    if(parse_keyword(in) == ")")
+        body = parse_expr(in);
+    else
+        throw std::runtime_error("expecting )");
+    return new FunExpr(formal_arg->to_string(), body);
+}
 
 
 TEST_CASE ("parse_interp") {
@@ -261,4 +302,11 @@ TEST_CASE ("parse_pretty_print") {
     CHECK_THROWS_WITH(parse_str("(_let x=5 _in ((_let y=3 _in (y+2))+x)")->to_pretty_string(), "missing close parenthesis");
     CHECK_THROWS_WITH(parse_str(" 3 + 7 + _let x = 3        _in  _lets x = 5             _in  x + _let x = 5                      _in  x * 1")->to_pretty_string(), "invalid input");
     CHECK(parse_str("     8")->to_string() == "8");
+    
+//    CHECK(parse_str("if 1978213523==895472277 _then 421926333 _else -262170344+_let s=1930413280 _in 535505750       +762586027")->to_pretty_string() == "");
+}
+
+TEST_CASE ("interp parse_function") {
+    CHECK(parse_str("_let f = _fun (x) x _in  f(2)")->interp()->equals(new NumVal(2)));
+    CHECK(parse_str("_let f = _fun (x) x + 1 _in  f(10)")->interp()->equals(new NumVal(11)));
 }

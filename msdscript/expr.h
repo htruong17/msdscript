@@ -155,4 +155,34 @@ public:
     virtual std::ostream& pretty_print(std::ostream& argument);
     virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS);
 };
+
+class FunExpr: public Expr{
+public:
+    std::string formal_arg;
+    Expr *body;
+    
+    FunExpr(std::string formal_arg, Expr *body);
+    virtual bool equals(Expr *other);
+    virtual Val* interp();
+    virtual bool has_variable();
+    virtual Expr* subst(std::string str, Expr *other);
+    virtual std::ostream& print(std::ostream& argument);
+    virtual std::ostream& pretty_print(std::ostream& argument);
+    virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS);
+};
+
+class CallExpr: public Expr{
+public:
+    Expr *to_be_called;
+    Expr *actual_arg;
+    
+    CallExpr(Expr *to_be_called, Expr *actual_arg);
+    virtual bool equals(Expr *other);
+    virtual Val* interp();
+    virtual bool has_variable();
+    virtual Expr* subst(std::string str, Expr *other);
+    virtual std::ostream& print(std::ostream& argument);
+    virtual std::ostream& pretty_print(std::ostream& argument);
+    virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS);
+};
 #endif /* expr_hpp */

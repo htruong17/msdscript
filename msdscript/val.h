@@ -23,6 +23,7 @@ public:
     virtual Val* add_to(Val* other_val) = 0;
     virtual Val* mult_by(Val* other_val) = 0;
     virtual bool equals(Val* other) = 0;
+    virtual Val *call(Val *actual_arg) = 0;
 
 };
 
@@ -34,6 +35,7 @@ public:
     virtual Val* add_to(Val* other_val);
     virtual Val* mult_by(Val* other_val);
     virtual bool equals(Val* other);
+    virtual Val *call(Val *actual_arg);
 //    virtual std::ostream& print(std::ostream& argument);
 //    virtual std::ostream& pretty_print(std::ostream& argument);
 };
@@ -47,5 +49,19 @@ public:
     virtual Val* add_to(Val* other_val);
     virtual Val* mult_by(Val* other_val);
     virtual bool equals(Val* other);
+    virtual Val *call(Val *actual_arg);
+};
+
+class FunVal : public Val{
+public:
+    std::string formal_arg;
+    Expr *body;
+    
+    FunVal(std::string formal_arg, Expr *body);
+    virtual Expr* to_expr();
+    virtual Val* add_to(Val* other_val);
+    virtual Val* mult_by(Val* other_val);
+    virtual bool equals(Val* other);
+    virtual Val *call(Val *actual_arg);
 };
 #endif /* val_hpp */

@@ -25,7 +25,6 @@ class Expr{
 public:
     virtual bool equals(Expr *other) = 0;
     virtual Val* interp() = 0;
-    virtual bool has_variable() = 0;
     virtual Expr* subst(std::string str, Expr *other) = 0;
     virtual std::ostream& print(std::ostream& argument) = 0;
     std::string to_string();
@@ -41,7 +40,6 @@ public:
     NumExpr(int rep);
     virtual bool equals(Expr *other);
     virtual Val* interp();
-    virtual bool has_variable();
     virtual Expr* subst(std::string str, Expr *other);
     virtual std::ostream& print(std::ostream& argument);
     virtual std::ostream& pretty_print(std::ostream& argument);
@@ -56,7 +54,6 @@ public:
     AddExpr(Expr *lhs, Expr *rhs);
     virtual bool equals(Expr *other);
     virtual Val* interp();
-    virtual bool has_variable();
     virtual Expr* subst(std::string str, Expr *other);
     virtual std::ostream& print(std::ostream& argument);
     //std::string to_string();
@@ -71,7 +68,6 @@ public:
     MultExpr(Expr *lhs, Expr *rhs);
     virtual bool equals(Expr *other);
     virtual Val* interp();
-    virtual bool has_variable();
     virtual Expr* subst(std::string str, Expr *other);
     virtual std::ostream& print(std::ostream& argument);
     //std::string to_string();
@@ -85,7 +81,6 @@ public:
     VarExpr(std::string str);
     virtual bool equals(Expr *other);
     virtual Val* interp();
-    virtual bool has_variable();
     virtual Expr* subst(std::string str, Expr *other);
     virtual std::ostream& print(std::ostream& argument);
     virtual std::ostream& pretty_print(std::ostream& argument);
@@ -102,7 +97,6 @@ public:
     LetExpr(std::string variable, Expr *rhs, Expr *body);
     virtual bool equals(Expr *other);
     virtual Val* interp();
-    virtual bool has_variable();
     virtual Expr* subst(std::string str, Expr *other);
     virtual std::ostream& print(std::ostream& argument);
     virtual std::ostream& pretty_print(std::ostream& argument);
@@ -117,7 +111,6 @@ public:
     BoolExpr(bool rep);
     virtual bool equals(Expr *other);
     virtual Val* interp();
-    virtual bool has_variable();
     virtual Expr* subst(std::string str, Expr *other);
     virtual std::ostream& print(std::ostream& argument);
     virtual std::ostream& pretty_print(std::ostream& argument);
@@ -132,7 +125,6 @@ public:
     EqExpr(Expr *lhs, Expr *rhs);
     virtual bool equals(Expr *other);
     virtual Val* interp();
-    virtual bool has_variable();
     virtual Expr* subst(std::string str, Expr *other);
     virtual std::ostream& print(std::ostream& argument);
     virtual std::ostream& pretty_print(std::ostream& argument);
@@ -149,7 +141,6 @@ public:
     IfExpr(Expr *_if, Expr *_then, Expr *_else);
     virtual bool equals(Expr *other);
     virtual Val* interp();
-    virtual bool has_variable();
     virtual Expr* subst(std::string str, Expr *other);
     virtual std::ostream& print(std::ostream& argument);
     virtual std::ostream& pretty_print(std::ostream& argument);
@@ -164,7 +155,6 @@ public:
     FunExpr(std::string formal_arg, Expr *body);
     virtual bool equals(Expr *other);
     virtual Val* interp();
-    virtual bool has_variable();
     virtual Expr* subst(std::string str, Expr *other);
     virtual std::ostream& print(std::ostream& argument);
     virtual std::ostream& pretty_print(std::ostream& argument);
@@ -179,7 +169,6 @@ public:
     CallExpr(Expr *to_be_called, Expr *actual_arg);
     virtual bool equals(Expr *other);
     virtual Val* interp();
-    virtual bool has_variable();
     virtual Expr* subst(std::string str, Expr *other);
     virtual std::ostream& print(std::ostream& argument);
     virtual std::ostream& pretty_print(std::ostream& argument);

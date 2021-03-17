@@ -76,8 +76,9 @@ Expr *parse_inner(std::istream &in){
             return new BoolExpr(true);
         else if(keyword == "_if")
             return parse_if(in);
-        else if(keyword == "_fun")
+        else if(keyword == "_fun"){
             return parse_fun(in);
+        }
         else
            throw std::runtime_error("invalid input");
     }
@@ -242,13 +243,13 @@ Expr *parse_fun(std::istream &in){
         formal_arg = parse_var(in);
     else
         throw std::runtime_error("expecting (");
+    skip_whitespace(in);
     if(parse_keyword(in) == ")")
         body = parse_expr(in);
     else
         throw std::runtime_error("expecting )");
     return new FunExpr(formal_arg->to_string(), body);
 }
-
 
 TEST_CASE ("parse_interp") {
     std::string addition = "24+8";
@@ -304,9 +305,29 @@ TEST_CASE ("parse_pretty_print") {
     CHECK(parse_str("     8")->to_string() == "8");
     
 //    CHECK(parse_str("if 1978213523==895472277 _then 421926333 _else -262170344+_let s=1930413280 _in 535505750       +762586027")->to_pretty_string() == "");
+    
+    CHECK(parse_str("_let factrl = _fun (factrl)\n                _fun (x)\n                  _if x == 1\n                  _then 1\n                  _else x * factrl(factrl)(x + -1)\n_in  factrl(factrl)(10)")->to_pretty_string() =="_let factrl = _fun (factrl)\n                _fun (x)\n                  _if x == 1\n                  _then 1\n                  _else x * factrl(factrl)(x + -1)\n_in  factrl(factrl)(10)");
+    
+    
+//    CHECK((parse_str("869624221+1806805595")->interp()->to_expr()->to_string())=="");
+//    CHECK(parse_str(parse_str("869624221+1806805595")->to_string())->interp()->to_expr()->to_string()=="");
+    
 }
+
 
 TEST_CASE ("interp parse_function") {
     CHECK(parse_str("_let f = _fun (x) x _in  f(2)")->interp()->equals(new NumVal(2)));
     CHECK(parse_str("_let f = _fun (x) x + 1 _in  f(10)")->interp()->equals(new NumVal(11)));
+    CHECK_THROWS_WITH(parse_str("_let f = _fun x) x _in  f(2)")->to_string(), "expecting (");
+    CHECK_THROWS_WITH(parse_str("_let f = _fun (x x _in  f(2)")->to_string(), "expecting )");
+    CHECK(parse_str("_let factrl = _fun (factrl) _fun (x) _if x == 1 _then 1 _else x * factrl(factrl)(x + -1) _in  factrl(factrl)(10)")->interp()->equals(new NumVal(3628800)));
 }
+
+TEST_CASE("Pretty Print Calls"){
+    CHECK(parse_str("factrl(factrl)(x + -1)")->to_pretty_string() == "factrl(factrl)(x + -1)");
+    
+    CHECK(parse_str("(factrl)(factrl)(x + -1)")->to_pretty_string() == "factrl(factrl)(x + -1)");
+}
+
+
+

@@ -78,20 +78,6 @@ TEST_CASE ("interp") {
   
 }
 
-TEST_CASE ("has_variable") {
-    CHECK( (new NumExpr(7))->has_variable() == false);
-    CHECK( (new VarExpr("x"))->has_variable() == true);
-    CHECK( (new AddExpr(varx,num4))->has_variable() == true);
-    CHECK( (new AddExpr(num1,num4))->has_variable() == false);
-    CHECK( (new MultExpr(num2,vary))->has_variable() == true);
-    CHECK( (new MultExpr(num1,num4))->has_variable() == false);
-    CHECK((new AddExpr(new NumExpr(3),(new AddExpr(new NumExpr(7),(new LetExpr("x", new NumExpr(3), (new LetExpr("x", new NumExpr(5), new AddExpr(new VarExpr("x"), new LetExpr("x", new NumExpr(5), new MultExpr(new VarExpr("x"), new NumExpr(1))))))))))))->has_variable() == true);
-    CHECK((new LetExpr("x", new NumExpr(5), new AddExpr( new LetExpr("y", new NumExpr(3), new AddExpr( new VarExpr("y"), new NumExpr(2) )), new VarExpr("x"))))->has_variable() == true);
-    CHECK((new LetExpr("x", new NumExpr(5), new AddExpr( new LetExpr("y", new NumExpr(3), new AddExpr( new NumExpr(1), new NumExpr(2) )), new NumExpr(2))))->has_variable() == false);
-    CHECK((new LetExpr("x", new NumExpr(5), new AddExpr(new VarExpr("x"), new NumExpr(1))))->has_variable() == true);
-    CHECK((new LetExpr("x", new NumExpr(5), new AddExpr(new NumExpr(2), new NumExpr(1))))->has_variable() == false);
-    
-}
 
 TEST_CASE ("subst") {
     CHECK( (new VarExpr("x"))->subst("x", new VarExpr("b"))->equals(new VarExpr("b")) == true);
@@ -360,7 +346,6 @@ TEST_CASE ("boolean") {
     CHECK((new BoolExpr(true))->equals(new BoolExpr(true)));
     CHECK((new BoolExpr(true))->equals(NULL) == false);
     CHECK((new BoolExpr(true))->subst("x", new BoolExpr(false)));
-    CHECK((new BoolExpr(true))->has_variable() == false);
     CHECK((new BoolExpr(true))->to_string() == "_true");
     CHECK((new BoolExpr(false))->to_string() == "_false");
     
@@ -392,7 +377,6 @@ TEST_CASE ("equal interp") {
 TEST_CASE ("eqExpr") {
     CHECK((new EqExpr(new NumExpr(8),new NumExpr(8)))->equals((new EqExpr(new NumExpr(8),new NumExpr(8)))));
     CHECK((new EqExpr(new NumExpr(8),new NumExpr(8)))->equals(NULL) == false);
-    CHECK((new EqExpr(new NumExpr(8),new NumExpr(8)))->has_variable() == false);
     CHECK((new EqExpr(new NumExpr(8),new NumExpr(8)))->subst("x", new NumExpr(2))->equals(new EqExpr(new NumExpr(8),new NumExpr(8))));
     
 };
@@ -420,7 +404,6 @@ TEST_CASE ("IfExp") {
     
     CHECK((new MultExpr((new IfExpr(new AddExpr(new EqExpr(new NumExpr(1),new NumExpr(2)), new NumExpr(24)), new AddExpr(new BoolExpr(true), new NumExpr(5)),new NumExpr(88))), new NumExpr(2)))->to_pretty_string() == "(_if (1 == 2) + 24\n _then _true + 5\n _else 88) * 2");
     
-    CHECK((new IfExpr(new EqExpr(new NumExpr(1),new NumExpr(2)), new AddExpr(new BoolExpr(false), new NumExpr(5)),new NumExpr(88)))->has_variable() == false);
     
     CHECK((new IfExpr(new EqExpr(new NumExpr(1),new NumExpr(2)), new AddExpr(new BoolExpr(false), new NumExpr(5)),new NumExpr(88)))->equals((new IfExpr(new EqExpr(new NumExpr(1),new NumExpr(2)), new AddExpr(new BoolExpr(false), new NumExpr(5)),new NumExpr(88)))));
     
@@ -441,5 +424,40 @@ TEST_CASE ("IfExp") {
 
 TEST_CASE ("Let Fun Interp") {
     CHECK((new LetExpr("f", new FunExpr("x", new MultExpr(new VarExpr("x"),new VarExpr("x"))), new CallExpr(new VarExpr("f"), new NumExpr(2))))->interp()->equals(new NumVal(4)));
+}
+
+TEST_CASE ("FunExpr Tests") {
+    CHECK((new FunExpr("x", new MultExpr(new VarExpr("x"),new VarExpr("x"))))->equals(new FunExpr("x", new MultExpr(new VarExpr("x"),new VarExpr("x")))));
+    
+    CHECK((new FunExpr("x", new MultExpr(new VarExpr("x"),new VarExpr("x"))))->equals(NULL) == false);
+    
+    CHECK((new FunExpr("x", new AddExpr(new VarExpr("x"),new VarExpr("2"))))->subst("x", new NumExpr(3))->equals(new FunExpr("x", new AddExpr(new VarExpr("x"),new VarExpr("2")))));
+       
+    CHECK((new FunExpr("x", new AddExpr(new VarExpr("x"),new VarExpr("y"))))->subst("y", new NumExpr(3))->equals(new FunExpr("x", new AddExpr(new VarExpr("x"),new NumExpr(3)))));
+    
+    CHECK((new FunExpr("x", new MultExpr(new VarExpr("x"),new VarExpr("x"))))->to_string() == "(_fun (x) (x*x))");
+    
+    CHECK((new FunExpr("x", new MultExpr(new VarExpr("x"),new VarExpr("x"))))->to_pretty_string() == "_fun (x)\n  x * x");
+    
+    CHECK((new AddExpr((new FunExpr("x", new MultExpr(new VarExpr("x"),new VarExpr("x")))), new NumExpr(2)))->to_pretty_string() == "(_fun (x)\n   x * x) + 2");
+    
+   
+
+    
+    
+}
+
+TEST_CASE ("CallExpr Tests") {
+    
+    CHECK((new CallExpr(new VarExpr("f"), new MultExpr(new VarExpr("x"),new VarExpr("x"))))->equals(NULL) == false);
+    
+    CHECK((new CallExpr(new VarExpr("f"), new MultExpr(new VarExpr("x"),new VarExpr("x"))))->equals(new CallExpr(new VarExpr("f"), new MultExpr(new VarExpr("x"),new VarExpr("x")))));
+    
+    CHECK((new CallExpr(new VarExpr("factrl"), new NumExpr(10)))->to_string() == "(factrl(10))");
+    
+    CHECK((new CallExpr(new VarExpr("factrl"), new NumExpr(10)))->to_pretty_string() == "factrl(10)");
+    
+//    CHECK((new CallExpr((new CallExpr(new VarExpr("factrl"), new NumExpr(10))),new VarExpr("factrl") ))->to_pretty_string() == "factrl(10)");
+  
 }
                                                         

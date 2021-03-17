@@ -46,11 +46,6 @@ Val* NumExpr::interp(){
     return new NumVal(this->rep);
 }
 
-// Returns false because a Num is not a variable
-// Nor does it contain a variable
-bool NumExpr::has_variable(){
-    return false;
-}
 
 // Returns this because it doesn't have a variable
 // for comparison
@@ -93,11 +88,6 @@ Val* AddExpr::interp(){
     return lhs->interp()->add_to(rhs->interp());
 }
 
-// If any of the parameters for Add is a variable
-// then it returns true
-bool AddExpr::has_variable(){
-    return (lhs->has_variable() || rhs->has_variable());
-}
 
 // Returns a new Add expr with substituted parameters if applicable
 Expr* AddExpr::subst(std::string subStr, Expr *other){
@@ -156,11 +146,6 @@ Val* MultExpr::interp(){
     return lhs->interp()->mult_by(rhs->interp());
 }
 
-// If any of the parameters for Mult is a variable
-// then it returns true
-bool MultExpr::has_variable(){
-    return (lhs->has_variable() || rhs->has_variable());
-}
 
 // Returns a new Mult expr with substituted parameters if applicable
 Expr* MultExpr::subst(std::string subStr, Expr *other){
@@ -217,10 +202,6 @@ Val* VarExpr::interp(){
     throw std::runtime_error("no value for variable");
 }
 
-// Checks to see if Var expression is a variable
-bool VarExpr::has_variable(){
-    return true;
-}
 
 // Substitute a specific variable with a given Expr of choice
 Expr* VarExpr::subst(std::string subStr, Expr *other){
@@ -268,11 +249,6 @@ Val* LetExpr::interp(){
     return body->subst(variable, rhs_val->to_expr())->interp();
 }
 
-// If the body parameter for _let has a variable
-// then it returns true
-bool LetExpr::has_variable(){
-    return body->has_variable();
-}
 
 // Returns a new _let expr with substituted parameters if applicable
 Expr* LetExpr::subst(std::string subStr, Expr *other){
@@ -349,11 +325,6 @@ Val* BoolExpr::interp(){
     return new BoolVal(this->rep);
 }
 
-// Returns false because a Num is not a variable
-// Nor does it contain a variable
-bool BoolExpr::has_variable(){
-    return false;
-}
 
 // Returns this because it doesn't have a variable
 // for comparison
@@ -408,11 +379,6 @@ Val* EqExpr::interp(){
         return new BoolVal(false);
 }
 
-// If any of the parameters for Add is a variable
-// then it returns true
-bool EqExpr::has_variable(){
-    return (lhs->has_variable() || rhs->has_variable());
-}
 
 // Returns a new Add expr with substituted parameters if applicable
 Expr* EqExpr::subst(std::string subStr, Expr *other){
@@ -473,13 +439,6 @@ Val* IfExpr::interp(){
         return _else->interp();
     else
         throw std::runtime_error("If is a non-boolean value");
-}
-
-// If the body parameter for _let has a variable
-// then it returns true
-bool IfExpr::has_variable(){
-    //return body->has_variable();
-    return (_if->has_variable() || _then->has_variable() || _else->has_variable());
 }
 
 // Returns a new _let expr with substituted parameters if applicable
@@ -551,9 +510,6 @@ Val* FunExpr::interp(){
     return new FunVal(formal_arg, body);
 }
 
-bool FunExpr::has_variable(){
-    return false;
-}
 
 Expr* FunExpr::subst(std::string subStr, Expr *other){
     Expr *new_body = body;
@@ -565,7 +521,8 @@ Expr* FunExpr::subst(std::string subStr, Expr *other){
 
 std::ostream& FunExpr::print(std::ostream& argument){
     
-    argument << "(_fun(" + formal_arg + ")";
+    argument << "(_fun (" + formal_arg + ") ";
+//    argument << "(";
     this->body->print(argument);
     argument << ")";
     return argument;
@@ -574,8 +531,12 @@ std::ostream& FunExpr::print(std::ostream& argument){
 void FunExpr::pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS){
     if (mode != print_group_none && !alwaysRHS)
        argument << "(";
-    argument << "_fun (" + formal_arg + ") ";
-    this->body->pretty_print_at(print_group_none, argument, newLineLocation, alwaysRHS);
+    int num1 = (int)argument.tellp();
+    argument << "_fun (" + formal_arg + ")";
+    argument << "\n";
+    int newLine = (int)argument.tellp();
+    argument << std::string((num1-newLineLocation)+2, ' ');
+    this->body->pretty_print_at(print_group_none, argument, newLine, alwaysRHS);
     if (mode != print_group_none && !alwaysRHS)
          argument << ")";
 
@@ -604,10 +565,6 @@ Val* CallExpr::interp(){
     return to_be_called->interp()->call(actual_arg->interp());
 }
 
-bool CallExpr::has_variable(){
-    return false;
-}
-
 Expr* CallExpr::subst(std::string subStr, Expr *other){
     Expr *new_lhs = to_be_called->subst(subStr, other);
     Expr *new_rhs = actual_arg->subst(subStr, other);
@@ -626,14 +583,14 @@ std::ostream& CallExpr::print(std::ostream& argument){
 }
 
 void CallExpr::pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS){
-    if (mode >= print_group_add)
-        argument << "(";
+//    if (mode >= print_group_add)
+//        argument << "(";
     this->to_be_called->pretty_print_at(print_group_add, argument, newLineLocation, false);
-    argument << " (";
+    argument << "(";
     this->actual_arg->pretty_print_at(print_group_none, argument, newLineLocation, alwaysRHS);
-    argument << ") ";
-    if (mode >= print_group_add)
-        argument << ")";
+    argument << ")";
+//    if (mode >= print_group_add)
+//        argument << ")";
 }
 
 std::ostream& CallExpr::pretty_print(std::ostream& argument){

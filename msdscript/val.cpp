@@ -109,7 +109,7 @@ Expr* FunVal::to_expr(){
 }
 
 Val* FunVal::add_to(Val* other_val){
-    throw std::runtime_error("add error of FunVal");
+    throw std::runtime_error("add error for FunVal");
 }
 
 Val* FunVal::mult_by(Val* other_val){
@@ -145,9 +145,24 @@ TEST_CASE ("NumVal add_to") {
     //CHECK((new MultExpr(new NumExpr(5), NULL))->interp());
 }
 
+
 TEST_CASE ("Bool Val Equals") {
     CHECK((new BoolVal(true))->equals(NULL) == false);
 }
+
+TEST_CASE ("FunVal Tests") {
+    CHECK_THROWS_WITH((new FunVal("x", new AddExpr(new VarExpr("x"), new NumExpr(5))))->add_to((new FunVal("x", new AddExpr(new VarExpr("x"), new NumExpr(5))))),"add error for FunVal");
+    CHECK_THROWS_WITH((new FunVal("x", new AddExpr(new VarExpr("x"), new NumExpr(5))))->mult_by((new FunVal("x", new AddExpr(new VarExpr("x"), new NumExpr(5))))),"mult error for FunVal");
+    CHECK((new FunVal("x", new AddExpr(new VarExpr("x"), new NumExpr(5))))->equals((new FunVal("x", new AddExpr(new VarExpr("x"), new NumExpr(5))))));
+    CHECK((new FunVal("x", new AddExpr(new VarExpr("x"), new NumExpr(5))))->equals(NULL) == false);
+}
+
+TEST_CASE("Call Errors"){
+    CHECK_THROWS_WITH((new NumVal(3))->call(new NumVal(5)),"call error for NumVal");
+    CHECK_THROWS_WITH((new BoolVal(true))->call(new NumVal(5)),"call error for BoolVal");
+}
+
+
 
 //std::ostringstream ss;
 //

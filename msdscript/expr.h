@@ -9,6 +9,7 @@
 #ifndef expr_hpp
 #define expr_hpp
 
+#include "pointer.h"
 #include <stdio.h>
 #include <string>
 
@@ -21,11 +22,11 @@ typedef enum {
 class Val;
 
 
-class Expr{
+CLASS(Expr){
 public:
-    virtual bool equals(Expr *other) = 0;
-    virtual Val* interp() = 0;
-    virtual Expr* subst(std::string str, Expr *other) = 0;
+    virtual bool equals(PTR(Expr) other) = 0;
+    virtual PTR(Val) interp() = 0;
+    virtual PTR(Expr) subst(std::string str, PTR(Expr) other) = 0;
     virtual std::ostream& print(std::ostream& argument) = 0;
     std::string to_string();
     std::string to_pretty_string();
@@ -38,9 +39,9 @@ class NumExpr: public Expr{
 public:
     int rep;
     NumExpr(int rep);
-    virtual bool equals(Expr *other);
-    virtual Val* interp();
-    virtual Expr* subst(std::string str, Expr *other);
+    virtual bool equals(PTR(Expr) other);
+    virtual PTR(Val) interp();
+    virtual PTR(Expr) subst(std::string str, PTR(Expr) other);
     virtual std::ostream& print(std::ostream& argument);
     virtual std::ostream& pretty_print(std::ostream& argument);
     virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS);
@@ -48,13 +49,13 @@ public:
 
 class AddExpr: public Expr{
 public:
-    Expr *lhs;
-    Expr *rhs;
+    PTR(Expr) lhs;
+    PTR(Expr) rhs;
     
-    AddExpr(Expr *lhs, Expr *rhs);
-    virtual bool equals(Expr *other);
-    virtual Val* interp();
-    virtual Expr* subst(std::string str, Expr *other);
+    AddExpr(PTR(Expr) lhs, PTR(Expr) rhs);
+    virtual bool equals(PTR(Expr) other);
+    virtual PTR(Val) interp();
+    virtual PTR(Expr) subst(std::string str, PTR(Expr) other);
     virtual std::ostream& print(std::ostream& argument);
     //std::string to_string();
     virtual std::ostream& pretty_print(std::ostream& argument);
@@ -63,12 +64,12 @@ public:
 
 class MultExpr: public Expr{
 public:
-    Expr *lhs;
-    Expr *rhs;
-    MultExpr(Expr *lhs, Expr *rhs);
-    virtual bool equals(Expr *other);
-    virtual Val* interp();
-    virtual Expr* subst(std::string str, Expr *other);
+    PTR(Expr) lhs;
+    PTR(Expr) rhs;
+    MultExpr(PTR(Expr) lhs, PTR(Expr) rhs);
+    virtual bool equals(PTR(Expr) other);
+    virtual PTR(Val) interp();
+    virtual PTR(Expr) subst(std::string str, PTR(Expr) other);
     virtual std::ostream& print(std::ostream& argument);
     //std::string to_string();
     virtual std::ostream& pretty_print(std::ostream& argument);
@@ -79,9 +80,9 @@ class VarExpr: public Expr{
 public:
     std::string str;
     VarExpr(std::string str);
-    virtual bool equals(Expr *other);
-    virtual Val* interp();
-    virtual Expr* subst(std::string str, Expr *other);
+    virtual bool equals(PTR(Expr) other);
+    virtual PTR(Val) interp();
+    virtual PTR(Expr) subst(std::string str, PTR(Expr) other);
     virtual std::ostream& print(std::ostream& argument);
     virtual std::ostream& pretty_print(std::ostream& argument);
     virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS);
@@ -90,14 +91,14 @@ public:
 class LetExpr: public Expr{
 public:
     std::string variable;
-    Expr *rhs;
-    Expr *body;
+    PTR(Expr) rhs;
+    PTR(Expr) body;
     //int newLine;
     
-    LetExpr(std::string variable, Expr *rhs, Expr *body);
-    virtual bool equals(Expr *other);
-    virtual Val* interp();
-    virtual Expr* subst(std::string str, Expr *other);
+    LetExpr(std::string variable, PTR(Expr) rhs, PTR(Expr) body);
+    virtual bool equals(PTR(Expr) other);
+    virtual PTR(Val) interp();
+    virtual PTR(Expr) subst(std::string str, PTR(Expr) other);
     virtual std::ostream& print(std::ostream& argument);
     virtual std::ostream& pretty_print(std::ostream& argument);
     virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS);
@@ -109,9 +110,9 @@ public:
     bool rep;
     
     BoolExpr(bool rep);
-    virtual bool equals(Expr *other);
-    virtual Val* interp();
-    virtual Expr* subst(std::string str, Expr *other);
+    virtual bool equals(PTR(Expr) other);
+    virtual PTR(Val) interp();
+    virtual PTR(Expr) subst(std::string str, PTR(Expr) other);
     virtual std::ostream& print(std::ostream& argument);
     virtual std::ostream& pretty_print(std::ostream& argument);
     virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS);
@@ -119,13 +120,13 @@ public:
 
 class EqExpr: public Expr{
 public:
-    Expr *lhs;
-    Expr *rhs;
+    PTR(Expr) lhs;
+    PTR(Expr) rhs;
     
-    EqExpr(Expr *lhs, Expr *rhs);
-    virtual bool equals(Expr *other);
-    virtual Val* interp();
-    virtual Expr* subst(std::string str, Expr *other);
+    EqExpr(PTR(Expr) lhs, PTR(Expr) rhs);
+    virtual bool equals(PTR(Expr) other);
+    virtual PTR(Val) interp();
+    virtual PTR(Expr) subst(std::string str, PTR(Expr) other);
     virtual std::ostream& print(std::ostream& argument);
     virtual std::ostream& pretty_print(std::ostream& argument);
     virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS);
@@ -134,14 +135,14 @@ public:
 
 class IfExpr: public Expr{
 public:
-    Expr *_if;
-    Expr *_then;
-    Expr *_else;
+    PTR(Expr) _if;
+    PTR(Expr) _then;
+    PTR(Expr) _else;
     
-    IfExpr(Expr *_if, Expr *_then, Expr *_else);
-    virtual bool equals(Expr *other);
-    virtual Val* interp();
-    virtual Expr* subst(std::string str, Expr *other);
+    IfExpr(PTR(Expr) _if, PTR(Expr) _then, PTR(Expr) _else);
+    virtual bool equals(PTR(Expr) other);
+    virtual PTR(Val) interp();
+    virtual PTR(Expr) subst(std::string str, PTR(Expr) other);
     virtual std::ostream& print(std::ostream& argument);
     virtual std::ostream& pretty_print(std::ostream& argument);
     virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS);
@@ -150,12 +151,12 @@ public:
 class FunExpr: public Expr{
 public:
     std::string formal_arg;
-    Expr *body;
+    PTR(Expr) body;
     
-    FunExpr(std::string formal_arg, Expr *body);
-    virtual bool equals(Expr *other);
-    virtual Val* interp();
-    virtual Expr* subst(std::string str, Expr *other);
+    FunExpr(std::string formal_arg, PTR(Expr) body);
+    virtual bool equals(PTR(Expr) other);
+    virtual PTR(Val) interp();
+    virtual PTR(Expr) subst(std::string str, PTR(Expr) other);
     virtual std::ostream& print(std::ostream& argument);
     virtual std::ostream& pretty_print(std::ostream& argument);
     virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS);
@@ -163,13 +164,13 @@ public:
 
 class CallExpr: public Expr{
 public:
-    Expr *to_be_called;
-    Expr *actual_arg;
+    PTR(Expr) to_be_called;
+    PTR(Expr) actual_arg;
     
-    CallExpr(Expr *to_be_called, Expr *actual_arg);
-    virtual bool equals(Expr *other);
-    virtual Val* interp();
-    virtual Expr* subst(std::string str, Expr *other);
+    CallExpr(PTR(Expr) to_be_called, PTR(Expr) actual_arg);
+    virtual bool equals(PTR(Expr) other);
+    virtual PTR(Val) interp();
+    virtual PTR(Expr) subst(std::string str, PTR(Expr) other);
     virtual std::ostream& print(std::ostream& argument);
     virtual std::ostream& pretty_print(std::ostream& argument);
     virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS);

@@ -96,9 +96,9 @@ std::string random_expr_string() {
     else if (rand() % 30 == 22 || rand() % 30 == 23){
         return random_let_string();
     }
-//    else if (rand() % 30 == 24){
-//        return parentheses(random_bool());
-//    }
+    else if (rand() % 30 == 24){
+        return parentheses(random_bool());
+    }
     else if (rand() % 30 == 25){
         return parentheses(random_call_string());
     }

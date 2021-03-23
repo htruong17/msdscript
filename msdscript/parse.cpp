@@ -28,7 +28,7 @@ static void skip_whitespace(std::istream &in) {
     }
 }
 
-Expr *parse_num(std::istream &in) {
+PTR(Expr) parse_num(std::istream &in) {
     int n = 0;
     bool negative = false;
     if (in.peek() == '-') {
@@ -46,10 +46,10 @@ Expr *parse_num(std::istream &in) {
     }
     if (negative)
         n = -n;
-    return new NumExpr(n);
+    return NEW(NumExpr)(n);
 }
 
-Expr *parse_inner(std::istream &in){
+PTR(Expr) parse_inner(std::istream &in){
     skip_whitespace(in);
 
     int c = in.peek();
@@ -57,7 +57,7 @@ Expr *parse_inner(std::istream &in){
         return parse_num(in);
     else if (c == '(') {
         consume(in, '(');
-        Expr *e = parse_expr(in);
+        PTR(Expr) e = parse_expr(in);
         skip_whitespace(in);
         c = in.get();
         if (c != ')')
@@ -71,9 +71,9 @@ Expr *parse_inner(std::istream &in){
         if (keyword == "_let")
             return parse_let(in);
         else if(keyword == "_false")
-            return new BoolExpr(false);
+            return NEW(BoolExpr)(false);
         else if(keyword == "_true")
-            return new BoolExpr(true);
+            return NEW(BoolExpr)(true);
         else if(keyword == "_if")
             return parse_if(in);
         else if(keyword == "_fun"){
@@ -88,53 +88,53 @@ Expr *parse_inner(std::istream &in){
     }
 }
 
-Expr *parse_multicand(std::istream &in){
-    Expr *e;
+PTR(Expr) parse_multicand(std::istream &in){
+    PTR(Expr) e;
     e = parse_inner(in);
     skip_whitespace(in);
     int c = in.peek();
     while(c == '(') {
         //skip_whitespace(in);
         consume(in, '(');
-        Expr *actual_arg = parse_expr(in);
+        PTR(Expr) actual_arg = parse_expr(in);
         skip_whitespace(in);
         consume(in, ')');
         
-        e = new CallExpr(e, actual_arg);
+        e = NEW(CallExpr)(e, actual_arg);
         c = in.peek();
     }
     return e;
 }
 
-Expr *parse_addend(std::istream &in){
-    Expr *e;
+PTR(Expr) parse_addend(std::istream &in){
+    PTR(Expr) e;
     e = parse_multicand(in);
     skip_whitespace(in);
     int c = in.peek();
     if (c == '*') {
         consume(in, '*');
-        Expr *rhs = parse_addend(in);
-        return new MultExpr(e, rhs);
+        PTR(Expr) rhs = parse_addend(in);
+        return NEW(MultExpr)(e, rhs);
     }
     else
         return e;
 }
 
-Expr *parse_comparg(std::istream &in){
-    Expr *e;
+PTR(Expr) parse_comparg(std::istream &in){
+    PTR(Expr) e;
     e = parse_addend(in);
     skip_whitespace(in);
     int c = in.peek();
     if (c == '+') {
         consume(in, '+');
-        Expr *rhs = parse_comparg(in);
-        return new AddExpr(e, rhs);
+        PTR(Expr) rhs = parse_comparg(in);
+        return NEW(AddExpr)(e, rhs);
     } else
         return e;
 }
 
-static Expr *parse_expr(std::istream &in) {
-    Expr *e;
+static PTR(Expr) parse_expr(std::istream &in) {
+    PTR(Expr) e;
     e = parse_comparg(in);
     skip_whitespace(in);
     int c = in.peek();
@@ -143,24 +143,24 @@ static Expr *parse_expr(std::istream &in) {
         int c = in.peek();
         if (c == '=') {
             consume(in, '=');
-            Expr *rhs = parse_expr(in);
-            return new EqExpr(e, rhs);
+            PTR(Expr) rhs = parse_expr(in);
+            return NEW(EqExpr)(e, rhs);
         }
         throw std::runtime_error("invalid comparg");
     } else
         return e;
 }
 
-Expr *parse_str(std::string s){
+PTR(Expr) parse_str(std::string s){
     std::istringstream str(s);
     return parse_expr(str);
 }
 
-Expr *parse(std::istream &in){
+PTR(Expr) parse(std::istream &in){
     return parse_expr(in);
 }
 
-Expr *parse_var(std::istream &in){
+PTR(Expr) parse_var(std::istream &in){
     skip_whitespace(in);
     std::string variable = "";
     int c = in.peek();
@@ -169,13 +169,13 @@ Expr *parse_var(std::istream &in){
         variable += c;
         c = in.peek();
     }
-    return new VarExpr(variable);
+    return NEW(VarExpr)(variable);
 }
 
-Expr *parse_let(std::istream &in){
-    Expr *var;
-    Expr *rhs;
-    Expr *body;
+PTR(Expr) parse_let(std::istream &in){
+    PTR(Expr) var;
+    PTR(Expr) rhs;
+    PTR(Expr) body;
     // _let keyword was checked in multicand already
     var = parse_var(in);
     if(parse_keyword(in) == "=")
@@ -186,7 +186,7 @@ Expr *parse_let(std::istream &in){
         body = parse_expr(in);
     else
         throw std::runtime_error("expecting _in");
-    return new LetExpr(var->to_string(), rhs, body);
+    return NEW(LetExpr)(var->to_string(), rhs, body);
 }
 
 std::string parse_keyword(std::istream &in){
@@ -208,21 +208,21 @@ std::string parse_keyword(std::istream &in){
         keyword += c;
         c = in.peek();
     }
-    if (c == '('){
-        consume(in, '(');
-        keyword += '(';
-    }
-    if (c == ')'){
-        consume(in, ')');
-        keyword += ')';
-    }
+//    if (c == '('){
+//        consume(in, '(');
+//        keyword += '(';
+//    }
+//    if (c == ')'){
+//        consume(in, ')');
+//        keyword += ')';
+//    }
     return keyword;
 }
 
-Expr *parse_if(std::istream &in){
-    Expr *_if;
-    Expr *_then;
-    Expr *_else;
+PTR(Expr) parse_if(std::istream &in){
+    PTR(Expr) _if;
+    PTR(Expr) _then;
+    PTR(Expr) _else;
     _if = parse_expr(in);
     if(parse_keyword(in) == "_then")
         _then = parse_expr(in);
@@ -232,33 +232,44 @@ Expr *parse_if(std::istream &in){
         _else = parse_expr(in);
     else
         throw std::runtime_error("expecting _else");
-    return new IfExpr(_if, _then, _else);
+    return NEW(IfExpr)(_if, _then, _else);
 }
 
-Expr *parse_fun(std::istream &in){
-    Expr *formal_arg;
-    Expr *body;
+PTR(Expr) parse_fun(std::istream &in){
+    PTR(Expr) formal_arg;
+    PTR(Expr) body;
     skip_whitespace(in);
-    if(parse_keyword(in) == "(")
-        formal_arg = parse_var(in);
+    int c = in.peek();
+    if(c == '('){
+        consume(in, '(');
+         formal_arg = parse_var(in);
+//    if(parse_keyword(in) == "(")
+//        formal_arg = parse_var(in);
+    }
     else
         throw std::runtime_error("expecting (");
     skip_whitespace(in);
-    if(parse_keyword(in) == ")")
+    c = in.peek();
+    if(c == ')'){
+    //if(parse_keyword(in) == ")")
+        consume(in, ')');
         body = parse_expr(in);
+         
+    }
     else
         throw std::runtime_error("expecting )");
-    return new FunExpr(formal_arg->to_string(), body);
+     skip_whitespace(in);
+    return NEW(FunExpr)(formal_arg->to_string(), body);
 }
 
 TEST_CASE ("parse_interp") {
     std::string addition = "24+8";
     std::istringstream in_stream(addition);
-    CHECK(parse(in_stream)->interp()->equals(new NumVal(32)));
-    CHECK(parse_str("1+4")->interp()->equals(new NumVal(5)));
-    CHECK(parse_str("-1+4")->interp()->equals(new NumVal(3)));
-    CHECK(parse_str("_let x=6 _in x*3")->interp()->equals(new NumVal(18)));
-    CHECK(parse_str("(5*(_let x=5 _in (x+1)))")->interp()->equals(new NumVal(30)));
+    CHECK(parse(in_stream)->interp()->equals(NEW(NumVal)(32)));
+    CHECK(parse_str("1+4")->interp()->equals(NEW(NumVal)(5)));
+    CHECK(parse_str("-1+4")->interp()->equals(NEW(NumVal)(3)));
+    CHECK(parse_str("_let x=6 _in x*3")->interp()->equals(NEW(NumVal)(18)));
+    CHECK(parse_str("(5*(_let x=5 _in (x+1)))")->interp()->equals(NEW(NumVal)(30)));
     CHECK_THROWS_WITH(parse_str("(_let x=5 _in ((_let y=3 _in (y+2))+x)")->interp(), "missing close parenthesis");
     CHECK_THROWS_WITH(parse_str("! % (3"), "invalid input");
     CHECK_THROWS_WITH(parse_str("(_lets x=5 _in ((_let y=3 _in (y+2))+x)")->interp(), "invalid input");
@@ -266,19 +277,19 @@ TEST_CASE ("parse_interp") {
     CHECK_THROWS_WITH(parse_str("(_let x=5 _in ((_let y=3 _ins (y+2))+x)")->interp(), "expecting _in");
     CHECK_THROWS_WITH(parse_str("(_for x=5 _in ((_let y=3 _in (y+2))+x)")->interp(), "invalid input");
     CHECK_THROWS_WITH(consume(in_stream, '2'), "consume mismatch");
-    CHECK(parse_str("8")->interp()->equals(new NumVal(8)));
-    CHECK(parse_str("_let woof=6 _in woof*3")->interp()->equals(new NumVal(18)));
+    CHECK(parse_str("8")->interp()->equals(NEW(NumVal)(8)));
+    CHECK(parse_str("_let woof=6 _in woof*3")->interp()->equals(NEW(NumVal)(18)));
     CHECK_THROWS_WITH((parse_str("_let same = 1 = 2 _in _if 1 ==2 _then _false +5 _else 88"))->interp(),"invalid comparg");
     CHECK_THROWS_WITH((parse_str("_let same = 1 == 2 _in _if 1 ==2 _true _false +5 _else 88"))->interp(),"expecting _then");
     CHECK_THROWS_WITH((parse_str("_let same = 1 == 2 _in _if 1 ==2 _then _false +5 _elses 88"))->interp(),"expecting _else");
-    CHECK(parse_str("(1+3) == 4")->interp()->equals(new BoolVal(true)));
+    CHECK(parse_str("(1+3) == 4")->interp()->equals(NEW(BoolVal)(true)));
 }
 
 TEST_CASE ("parse_interp_spacing") {
-    CHECK(parse_str("   (    1  +   2     )    +   3    ")->interp()->equals(new NumVal(6)));
-    CHECK(parse_str(" 3 + 7 + _let x = 3        _in  _let x = 5             _in  x + _let x = 5                      _in  x * 1")->interp()->equals(new NumVal(20)));
-    CHECK(parse_str("   (    1  *   2     )    +  ( 3 *4  ) ")->interp()->equals(new NumVal(14)));
-    CHECK(parse_str("     24")->interp()->equals(new NumVal(24)));
+    CHECK(parse_str("   (    1  +   2     )    +   3    ")->interp()->equals(NEW(NumVal)(6)));
+    CHECK(parse_str(" 3 + 7 + _let x = 3        _in  _let x = 5             _in  x + _let x = 5                      _in  x * 1")->interp()->equals(NEW(NumVal)(20)));
+    CHECK(parse_str("   (    1  *   2     )    +  ( 3 *4  ) ")->interp()->equals(NEW(NumVal)(14)));
+    CHECK(parse_str("     24")->interp()->equals(NEW(NumVal)(24)));
 }
 
 TEST_CASE ("parse_print") {
@@ -316,11 +327,11 @@ TEST_CASE ("parse_pretty_print") {
 
 
 TEST_CASE ("interp parse_function") {
-    CHECK(parse_str("_let f = _fun (x) x _in  f(2)")->interp()->equals(new NumVal(2)));
-    CHECK(parse_str("_let f = _fun (x) x + 1 _in  f(10)")->interp()->equals(new NumVal(11)));
+    CHECK(parse_str("_let f = _fun (x) x _in  f(2)")->interp()->equals(NEW(NumVal)(2)));
+    CHECK(parse_str("_let f = _fun (x) x + 1 _in  f(10)")->interp()->equals(NEW(NumVal)(11)));
     CHECK_THROWS_WITH(parse_str("_let f = _fun x) x _in  f(2)")->to_string(), "expecting (");
     CHECK_THROWS_WITH(parse_str("_let f = _fun (x x _in  f(2)")->to_string(), "expecting )");
-    CHECK(parse_str("_let factrl = _fun (factrl) _fun (x) _if x == 1 _then 1 _else x * factrl(factrl)(x + -1) _in  factrl(factrl)(10)")->interp()->equals(new NumVal(3628800)));
+    CHECK(parse_str("_let factrl = _fun (factrl) _fun (x) _if x == 1 _then 1 _else x * factrl(factrl)(x + -1) _in  factrl(factrl)(10)")->interp()->equals(NEW(NumVal)(3628800)));
 }
 
 TEST_CASE("Pretty Print Calls"){
@@ -329,5 +340,10 @@ TEST_CASE("Pretty Print Calls"){
     CHECK(parse_str("(factrl)(factrl)(x + -1)")->to_pretty_string() == "factrl(factrl)(x + -1)");
 }
 
+TEST_CASE("More testing"){
+    CHECK(parse_str("(_false)")->to_string() == "_false");
+    CHECK(parse_str("(_false)")->to_pretty_string() == "_false");
+//    CHECK(parse_str("905162409((_fun (i) mwFWMVKE))((_let f=-1873773093 _in 71330000))")->to_pretty_string() == "905162409(_fun (i)\n            mwFWMVKE)(_let f = -1873773093\n                      _in  71330000)");
+}
 
 

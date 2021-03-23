@@ -1,4 +1,4 @@
-INCS = cmdline.h expr.h parse.h val.h
+INCS = cmdline.h expr.h parse.h val.h pointer.h
 
 SRCS = cmdline.cpp main.cpp expr.cpp parse.cpp val.cpp
 

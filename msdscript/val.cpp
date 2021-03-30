@@ -173,8 +173,8 @@ TEST_CASE("Call Tests"){
 }
 
 TEST_CASE("to_string"){
-    CHECK((NEW(NumVal(24)))->to_string() == "24");
-    CHECK((NEW(BoolVal(true)))->to_string() == "_true");
-    CHECK((NEW(BoolVal(false)))->to_string() == "_false");
+    CHECK((NEW(NumVal)(24))->to_string() == "24");
+    CHECK((NEW(BoolVal)(true))->to_string() == "_true");
+    CHECK((NEW(BoolVal)(false))->to_string() == "_false");
     CHECK((NEW(FunVal)("x", NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(5)),Env::empty))->to_string() == "(_fun (x) (x+5))");
 }

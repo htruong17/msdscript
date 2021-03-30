@@ -37,8 +37,8 @@ TEST_CASE("EmptyEnv"){
     CHECK_THROWS_WITH((Env::empty)->lookup("x"), "free variable: x");
 }
 
-TEST_CASE("EmtendedEnv"){
-    CHECK((NEW(ExtendedEnv("name", NEW(NumVal(5)), Env::empty)))->lookup("name")->equals(NEW(NumVal(5))));
-    CHECK_THROWS_WITH((NEW(ExtendedEnv("name", NEW(NumVal(5)), Env::empty)))->lookup("no name"), "free variable: no name");
+TEST_CASE("ExtendedEnv"){
+    CHECK((NEW(ExtendedEnv)("name", NEW(NumVal)(5), NEW(EmptyEnv)()))->lookup("name")->equals(NEW(NumVal)(5)));
+    CHECK_THROWS_WITH((NEW(ExtendedEnv)("name", NEW(NumVal)(5), Env::empty))->lookup("no name"), "free variable: no name");
 }
 

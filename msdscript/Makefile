@@ -1,6 +1,6 @@
-INCS = cmdline.h expr.h parse.h val.h pointer.h
+INCS = cmdline.h expr.h parse.h val.h pointer.h env.h
 
-SRCS = cmdline.cpp main.cpp expr.cpp parse.cpp val.cpp
+SRCS = cmdline.cpp main.cpp expr.cpp parse.cpp val.cpp env.cpp
 
 OTHERDIR = ../test_msdscript/test_msdscript
 

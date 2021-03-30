@@ -13,6 +13,7 @@
 #include "catch.h"
 #include "parse.h"
 #include "val.h"
+#include "env.h"
 
 bool tested = false;
 
@@ -30,7 +31,7 @@ int use_arguments(int argc, char **argv){
             std::cerr << "Been tested already"  << std::endl;
             exit(1);
         } else if(std::string(argv[1]) == "--interp"){
-            std::cout << parse(std::cin)->interp()->to_expr()->to_string() << std::endl;
+            std::cout << parse(std::cin)->interp(Env::empty)->to_string() << std::endl;
             exit(0);
         } else if(std::string(argv[1]) == "--print"){
             try{

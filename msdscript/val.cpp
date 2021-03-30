@@ -10,6 +10,8 @@
 #include <stdexcept>
 #include "val.h"
 #include "expr.h"
+#include "env.h"
+#include <string>
 //#include "parse.h"
 //#include <sstream>
 
@@ -41,9 +43,6 @@ NumVal::NumVal(int rep) {
     this->rep = rep;
 }
 
-PTR(Expr) NumVal::to_expr(){
-    return NEW(NumExpr)(this->rep);
-}
 
 PTR(Val) NumVal::add_to(PTR(Val) other_val){
     PTR(NumVal) other_num = CAST(NumVal)(other_val);
@@ -67,6 +66,10 @@ bool NumVal::equals(PTR(Val) other){
         return (this->rep == other_numval->rep);
 }
 
+std::string NumVal::to_string(){
+    return std::to_string(rep);
+}
+
 PTR(Val) NumVal::call(PTR(Val) actual_arg){
     throw std::runtime_error("call error for NumVal");
 }
@@ -75,9 +78,6 @@ BoolVal::BoolVal(bool rep) {
     this->rep = rep;
 }
 
-PTR(Expr) BoolVal::to_expr(){
-    return NEW(BoolExpr)(this->rep);
-}
 
 PTR(Val) BoolVal::add_to(PTR(Val) other_val){
     throw std::runtime_error("cannot add with boolean");
@@ -95,18 +95,23 @@ bool BoolVal::equals(PTR(Val) other){
         return (this->rep == other_boolval->rep);
 }
 
+std::string BoolVal::to_string(){
+    if (rep)
+        return "_true";
+    else
+        return "_false";
+}
+
 PTR(Val) BoolVal::call(PTR(Val) actual_arg){
     throw std::runtime_error("call error for BoolVal");
 }
 
-FunVal::FunVal(std::string formal_arg, PTR(Expr) body){
+FunVal::FunVal(std::string formal_arg, PTR(Expr) body, PTR(Env) env){
     this->formal_arg = formal_arg;
     this->body = body;
+    this->env = env;
 }
 
-PTR(Expr) FunVal::to_expr(){
-    return NEW(FunExpr)(this->formal_arg, this->body);
-}
 
 PTR(Val) FunVal::add_to(PTR(Val) other_val){
     throw std::runtime_error("add error for FunVal");
@@ -124,25 +129,29 @@ bool FunVal::equals(PTR(Val) other){
         return (this->formal_arg == other_funval->formal_arg && this->body->equals(other_funval->body));
 }
 
+std::string FunVal::to_string(){
+    return "(_fun (" + formal_arg + ") " + body->to_string() + ")";
+}
+
 PTR(Val) FunVal::call(PTR(Val) actual_arg){
 //    PTR(FunVal) other_fun = dynamic_cast<PTR(FunVal)>(actual_arg);
 //    if (other_fun == NULL)
 //        throw std::runtime_error("Call error for FunVal");
-    return this->body->subst(this->formal_arg, actual_arg->to_expr())->interp();
+    return this->body->interp(NEW(ExtendedEnv)(formal_arg, actual_arg, env));
     //return this->body
 }
 
 
 TEST_CASE ("NumVal equals") {
-    CHECK((NEW(AddExpr)((NEW(MultExpr)(NEW(NumExpr)(5), NEW(LetExpr)("x", NEW(NumExpr)(5), NEW(VarExpr)("x")))), NEW(NumExpr)(1)))->interp()->equals(NULL) == false);
-    CHECK((NEW(AddExpr)(NEW(LetExpr)("x", NEW(NumExpr)(5), NEW(VarExpr)("x")), NEW(NumExpr)(1)))->interp() ->equals(NULL) == false);
+    CHECK((NEW(AddExpr)((NEW(MultExpr)(NEW(NumExpr)(5), NEW(LetExpr)("x", NEW(NumExpr)(5), NEW(VarExpr)("x")))), NEW(NumExpr)(1)))->interp(Env::empty)->equals(NULL) == false);
+    CHECK((NEW(AddExpr)(NEW(LetExpr)("x", NEW(NumExpr)(5), NEW(VarExpr)("x")), NEW(NumExpr)(1)))->interp(Env::empty) ->equals(NULL) == false);
 }
 
 TEST_CASE ("NumVal add_to") {
-    CHECK_THROWS_WITH( (NEW(MultExpr)(NEW(NumExpr)(5),NEW(NumExpr)(2)))->interp()->add_to(NULL),"add of non-number");
-    CHECK_THROWS_WITH( (NEW(AddExpr)(NEW(NumExpr)(5),NEW(NumExpr)(2)))->interp()->mult_by(NULL),"mult of non-number");
+    CHECK_THROWS_WITH( (NEW(MultExpr)(NEW(NumExpr)(5),NEW(NumExpr)(2)))->interp(Env::empty)->add_to(NULL),"add of non-number");
+    CHECK_THROWS_WITH( (NEW(AddExpr)(NEW(NumExpr)(5),NEW(NumExpr)(2)))->interp(Env::empty)->mult_by(NULL),"mult of non-number");
     
-    //CHECK((NEW(MultExpr)(NEW(NumExpr)(5), NULL))->interp());
+    //CHECK((NEW(MultExpr)(NEW(NumExpr)(5), NULL))->interp(Env::empty));
 }
 
 
@@ -151,28 +160,21 @@ TEST_CASE ("Bool Val Equals") {
 }
 
 TEST_CASE ("FunVal Tests") {
-    CHECK_THROWS_WITH((NEW(FunVal)("x", NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(5))))->add_to((NEW(FunVal)("x", NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(5))))),"add error for FunVal");
-    CHECK_THROWS_WITH((NEW(FunVal)("x", NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(5))))->mult_by((NEW(FunVal)("x", NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(5))))),"mult error for FunVal");
-    CHECK((NEW(FunVal)("x", NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(5))))->equals((NEW(FunVal)("x", NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(5))))));
-    CHECK((NEW(FunVal)("x", NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(5))))->equals(NULL) == false);
+    CHECK_THROWS_WITH((NEW(FunVal)("x", NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(5)),Env::empty))->add_to((NEW(FunVal)("x", NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(5)),Env::empty))),"add error for FunVal");
+    CHECK_THROWS_WITH((NEW(FunVal)("x", NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(5)),Env::empty))->mult_by((NEW(FunVal)("x", NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(5)),Env::empty))),"mult error for FunVal");
+    CHECK((NEW(FunVal)("x", NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(5)),Env::empty))->equals((NEW(FunVal)("x", NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(5)),Env::empty))));
+    CHECK((NEW(FunVal)("x", NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(5)),Env::empty))->equals(NULL) == false);
 }
 
 TEST_CASE("Call Tests"){
     CHECK_THROWS_WITH((NEW(NumVal)(3))->call(NEW(NumVal)(5)),"call error for NumVal");
     CHECK_THROWS_WITH((NEW(BoolVal)(true))->call(NEW(NumVal)(5)),"call error for BoolVal");
-    CHECK((NEW(FunVal)("x", NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(5))))->call(NEW(NumVal)(5))->equals(NEW(NumVal)(10)));
+    CHECK((NEW(FunVal)("x", NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(5)),Env::empty))->call(NEW(NumVal)(5))->equals(NEW(NumVal)(10)));
 }
 
-
-
-//std::ostringstream ss;
-//
-//TEST_CASE ("Val Print") {
-//    CHECK((parse_str("2+5*10")->interp()->to_string() == "52"));
-//}
-//
-//TEST_CASE ("Val Pretty Print") {
-//    CHECK((parse_str("_let x = 3 _in x + 5")->interp()->to_pretty_string() == "8"));
-//
-//}
-
+TEST_CASE("to_string"){
+    CHECK((NEW(NumVal(24)))->to_string() == "24");
+    CHECK((NEW(BoolVal(true)))->to_string() == "_true");
+    CHECK((NEW(BoolVal(false)))->to_string() == "_false");
+    CHECK((NEW(FunVal)("x", NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(5)),Env::empty))->to_string() == "(_fun (x) (x+5))");
+}

@@ -11,6 +11,7 @@
 #include <sstream>
 #include "parse.h"
 #include "val.h"
+#include "env.h"
 //#include "expr.h"
 
 static void consume(std::istream &in, int expect){
@@ -265,31 +266,31 @@ PTR(Expr) parse_fun(std::istream &in){
 TEST_CASE ("parse_interp") {
     std::string addition = "24+8";
     std::istringstream in_stream(addition);
-    CHECK(parse(in_stream)->interp()->equals(NEW(NumVal)(32)));
-    CHECK(parse_str("1+4")->interp()->equals(NEW(NumVal)(5)));
-    CHECK(parse_str("-1+4")->interp()->equals(NEW(NumVal)(3)));
-    CHECK(parse_str("_let x=6 _in x*3")->interp()->equals(NEW(NumVal)(18)));
-    CHECK(parse_str("(5*(_let x=5 _in (x+1)))")->interp()->equals(NEW(NumVal)(30)));
-    CHECK_THROWS_WITH(parse_str("(_let x=5 _in ((_let y=3 _in (y+2))+x)")->interp(), "missing close parenthesis");
+    CHECK(parse(in_stream)->interp(Env::empty)->equals(NEW(NumVal)(32)));
+    CHECK(parse_str("1+4")->interp(Env::empty)->equals(NEW(NumVal)(5)));
+    CHECK(parse_str("-1+4")->interp(Env::empty)->equals(NEW(NumVal)(3)));
+    CHECK(parse_str("_let x=6 _in x*3")->interp(Env::empty)->equals(NEW(NumVal)(18)));
+    CHECK(parse_str("(5*(_let x=5 _in (x+1)))")->interp(Env::empty)->equals(NEW(NumVal)(30)));
+    CHECK_THROWS_WITH(parse_str("(_let x=5 _in ((_let y=3 _in (y+2))+x)")->interp(Env::empty), "missing close parenthesis");
     CHECK_THROWS_WITH(parse_str("! % (3"), "invalid input");
-    CHECK_THROWS_WITH(parse_str("(_lets x=5 _in ((_let y=3 _in (y+2))+x)")->interp(), "invalid input");
-    CHECK_THROWS_WITH(parse_str("(_let x-5 _in ((_let y=3 _in (y+2))+x)")->interp(), "expecting =");
-    CHECK_THROWS_WITH(parse_str("(_let x=5 _in ((_let y=3 _ins (y+2))+x)")->interp(), "expecting _in");
-    CHECK_THROWS_WITH(parse_str("(_for x=5 _in ((_let y=3 _in (y+2))+x)")->interp(), "invalid input");
+    CHECK_THROWS_WITH(parse_str("(_lets x=5 _in ((_let y=3 _in (y+2))+x)")->interp(Env::empty), "invalid input");
+    CHECK_THROWS_WITH(parse_str("(_let x-5 _in ((_let y=3 _in (y+2))+x)")->interp(Env::empty), "expecting =");
+    CHECK_THROWS_WITH(parse_str("(_let x=5 _in ((_let y=3 _ins (y+2))+x)")->interp(Env::empty), "expecting _in");
+    CHECK_THROWS_WITH(parse_str("(_for x=5 _in ((_let y=3 _in (y+2))+x)")->interp(Env::empty), "invalid input");
     CHECK_THROWS_WITH(consume(in_stream, '2'), "consume mismatch");
-    CHECK(parse_str("8")->interp()->equals(NEW(NumVal)(8)));
-    CHECK(parse_str("_let woof=6 _in woof*3")->interp()->equals(NEW(NumVal)(18)));
-    CHECK_THROWS_WITH((parse_str("_let same = 1 = 2 _in _if 1 ==2 _then _false +5 _else 88"))->interp(),"invalid comparg");
-    CHECK_THROWS_WITH((parse_str("_let same = 1 == 2 _in _if 1 ==2 _true _false +5 _else 88"))->interp(),"expecting _then");
-    CHECK_THROWS_WITH((parse_str("_let same = 1 == 2 _in _if 1 ==2 _then _false +5 _elses 88"))->interp(),"expecting _else");
-    CHECK(parse_str("(1+3) == 4")->interp()->equals(NEW(BoolVal)(true)));
+    CHECK(parse_str("8")->interp(Env::empty)->equals(NEW(NumVal)(8)));
+    CHECK(parse_str("_let woof=6 _in woof*3")->interp(Env::empty)->equals(NEW(NumVal)(18)));
+    CHECK_THROWS_WITH((parse_str("_let same = 1 = 2 _in _if 1 ==2 _then _false +5 _else 88"))->interp(Env::empty),"invalid comparg");
+    CHECK_THROWS_WITH((parse_str("_let same = 1 == 2 _in _if 1 ==2 _true _false +5 _else 88"))->interp(Env::empty),"expecting _then");
+    CHECK_THROWS_WITH((parse_str("_let same = 1 == 2 _in _if 1 ==2 _then _false +5 _elses 88"))->interp(Env::empty),"expecting _else");
+    CHECK(parse_str("(1+3) == 4")->interp(Env::empty)->equals(NEW(BoolVal)(true)));
 }
 
 TEST_CASE ("parse_interp_spacing") {
-    CHECK(parse_str("   (    1  +   2     )    +   3    ")->interp()->equals(NEW(NumVal)(6)));
-    CHECK(parse_str(" 3 + 7 + _let x = 3        _in  _let x = 5             _in  x + _let x = 5                      _in  x * 1")->interp()->equals(NEW(NumVal)(20)));
-    CHECK(parse_str("   (    1  *   2     )    +  ( 3 *4  ) ")->interp()->equals(NEW(NumVal)(14)));
-    CHECK(parse_str("     24")->interp()->equals(NEW(NumVal)(24)));
+    CHECK(parse_str("   (    1  +   2     )    +   3    ")->interp(Env::empty)->equals(NEW(NumVal)(6)));
+    CHECK(parse_str(" 3 + 7 + _let x = 3        _in  _let x = 5             _in  x + _let x = 5                      _in  x * 1")->interp(Env::empty)->equals(NEW(NumVal)(20)));
+    CHECK(parse_str("   (    1  *   2     )    +  ( 3 *4  ) ")->interp(Env::empty)->equals(NEW(NumVal)(14)));
+    CHECK(parse_str("     24")->interp(Env::empty)->equals(NEW(NumVal)(24)));
 }
 
 TEST_CASE ("parse_print") {
@@ -320,18 +321,18 @@ TEST_CASE ("parse_pretty_print") {
     CHECK(parse_str("_let factrl = _fun (factrl)\n                _fun (x)\n                  _if x == 1\n                  _then 1\n                  _else x * factrl(factrl)(x + -1)\n_in  factrl(factrl)(10)")->to_pretty_string() =="_let factrl = _fun (factrl)\n                _fun (x)\n                  _if x == 1\n                  _then 1\n                  _else x * factrl(factrl)(x + -1)\n_in  factrl(factrl)(10)");
     
     
-//    CHECK((parse_str("869624221+1806805595")->interp()->to_expr()->to_string())=="");
-//    CHECK(parse_str(parse_str("869624221+1806805595")->to_string())->interp()->to_expr()->to_string()=="");
+//    CHECK((parse_str("869624221+1806805595")->interp(Env::empty)->to_expr()->to_string())=="");
+//    CHECK(parse_str(parse_str("869624221+1806805595")->to_string())->interp(Env::empty)->to_expr()->to_string()=="");
     
 }
 
 
 TEST_CASE ("interp parse_function") {
-    CHECK(parse_str("_let f = _fun (x) x _in  f(2)")->interp()->equals(NEW(NumVal)(2)));
-    CHECK(parse_str("_let f = _fun (x) x + 1 _in  f(10)")->interp()->equals(NEW(NumVal)(11)));
+    CHECK(parse_str("_let f = _fun (x) x _in  f(2)")->interp(Env::empty)->equals(NEW(NumVal)(2)));
+    CHECK(parse_str("_let f = _fun (x) x + 1 _in  f(10)")->interp(Env::empty)->equals(NEW(NumVal)(11)));
     CHECK_THROWS_WITH(parse_str("_let f = _fun x) x _in  f(2)")->to_string(), "expecting (");
     CHECK_THROWS_WITH(parse_str("_let f = _fun (x x _in  f(2)")->to_string(), "expecting )");
-    CHECK(parse_str("_let factrl = _fun (factrl) _fun (x) _if x == 1 _then 1 _else x * factrl(factrl)(x + -1) _in  factrl(factrl)(10)")->interp()->equals(NEW(NumVal)(3628800)));
+    CHECK(parse_str("_let factrl = _fun (factrl) _fun (x) _if x == 1 _then 1 _else x * factrl(factrl)(x + -1) _in  factrl(factrl)(10)")->interp(Env::empty)->equals(NEW(NumVal)(3628800)));
 }
 
 TEST_CASE("Pretty Print Calls"){

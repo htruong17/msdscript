@@ -12,6 +12,7 @@
 #include <iostream>
 #include <sstream>
 #include "val.h"
+#include "env.h"
 
 // Converts Expr to regular print string
 std::string Expr::to_string(){
@@ -42,16 +43,10 @@ bool NumExpr::equals(PTR(Expr) other){
 }
 
 // Returns the interpreted int value of the Num
-PTR(Val) NumExpr::interp(){
+PTR(Val) NumExpr::interp(PTR(Env) env){
     return NEW(NumVal)(this->rep);
 }
 
-
-// Returns this because it doesn't have a variable
-// for comparison
-PTR(Expr) NumExpr::subst(std::string subStr, PTR(Expr) other){
-    return THIS;
-};
 
 // Prints number value to ostream
 std::ostream& NumExpr::print(std::ostream& argument){
@@ -84,17 +79,9 @@ bool AddExpr::equals(PTR(Expr) other){
 }
 
 // Returns the sum value as an int
-PTR(Val) AddExpr::interp(){
-    return lhs->interp()->add_to(rhs->interp());
+PTR(Val) AddExpr::interp(PTR(Env) env){
+    return lhs->interp(env)->add_to(rhs->interp(env));
 }
-
-
-// Returns a new Add expr with substituted parameters if applicable
-PTR(Expr) AddExpr::subst(std::string subStr, PTR(Expr) other){
-    PTR(Expr) new_lhs = lhs->subst(subStr, other);
-    PTR(Expr) new_rhs = rhs->subst(subStr, other);
-    return NEW(AddExpr)(new_lhs,new_rhs);
-};
 
 
 // Print Addition expr to ostream
@@ -143,17 +130,10 @@ bool MultExpr::equals(PTR(Expr) other){
 }
 
 // Returns the multiplication product value as an int
-PTR(Val) MultExpr::interp(){
-    return lhs->interp()->mult_by(rhs->interp());
+PTR(Val) MultExpr::interp(PTR(Env) env){
+    return lhs->interp(env)->mult_by(rhs->interp(env));
 }
 
-
-// Returns a new Mult expr with substituted parameters if applicable
-PTR(Expr) MultExpr::subst(std::string subStr, PTR(Expr) other){
-    PTR(Expr) new_lhs = lhs->subst(subStr, other);
-    PTR(Expr) new_rhs = rhs->subst(subStr, other);
-    return NEW(MultExpr)(new_lhs,new_rhs);
-};
 
 // Print Multiplication expr to ostream
 std::ostream& MultExpr::print(std::ostream& argument){
@@ -199,19 +179,10 @@ bool VarExpr::equals(PTR(Expr) other){
 
 // Cannot interpret an int value from a variable constant
 // Therefore runtime error has to be thrown
-PTR(Val) VarExpr::interp(){
-    throw std::runtime_error("no value for variable");
+PTR(Val) VarExpr::interp(PTR(Env) env){
+    return env->lookup(str);
 }
 
-
-// Substitute a specific variable with a given Expr of choice
-PTR(Expr) VarExpr::subst(std::string subStr, PTR(Expr) other){
-    if (this->str == subStr){
-        return other;
-    }
-    else
-        return THIS;
-};
 
 // Prints variable string to ostream
 std::ostream& VarExpr::print(std::ostream& argument){
@@ -245,31 +216,12 @@ bool LetExpr::equals(PTR(Expr) other){
 }
 
 // Returns the calculated value as an int
-PTR(Val) LetExpr::interp(){
-    PTR(Val) rhs_val = rhs->interp();
-    return body->subst(variable, rhs_val->to_expr())->interp();
+PTR(Val) LetExpr::interp(PTR(Env) env){
+    PTR(Val) rhs_val = rhs->interp(env);
+    PTR(Env) new_env = NEW(ExtendedEnv)(variable, rhs_val, env);
+    return body->interp(new_env);
 }
 
-
-// Returns a new _let expr with substituted parameters if applicable
-PTR(Expr) LetExpr::subst(std::string subStr, PTR(Expr) other){
-//    if(subStr == variable){
-//        PTR(Expr) new_rhs = rhs->subst(subStr,other);
-//        return new LetExpr(variable,new_rhs, body);
-//    }
-//    else {
-//        PTR(Expr) new_body = body->subst(subStr, other);
-//        return new LetExpr(variable,rhs, new_body);
-//    }
-
-    PTR(Expr) new_rhs = rhs->subst(subStr,other);
-    PTR(Expr) new_body = body;
-    if(subStr != variable){
-        new_body = body->subst(subStr, other);
-    }
-    return NEW(LetExpr)(variable,new_rhs, new_body);
-      
-};
 
 // Print _let expr to ostream
 std::ostream& LetExpr::print(std::ostream& argument){
@@ -322,16 +274,10 @@ bool BoolExpr::equals(PTR(Expr) other){
 }
 
 // Returns the interpreted int value of the Num
-PTR(Val) BoolExpr::interp(){
+PTR(Val) BoolExpr::interp(PTR(Env) env){
     return NEW(BoolVal)(this->rep);
 }
 
-
-// Returns this because it doesn't have a variable
-// for comparison
-PTR(Expr) BoolExpr::subst(std::string subStr, PTR(Expr) other){
-    return THIS;
-};
 
 // Prints number value to ostream
 std::ostream& BoolExpr::print(std::ostream& argument){
@@ -373,20 +319,13 @@ bool EqExpr::equals(PTR(Expr) other){
 }
 
 // Returns the sum value as an int
-PTR(Val) EqExpr::interp(){
-    if (lhs->interp()->equals(rhs->interp()))
+PTR(Val) EqExpr::interp(PTR(Env) env){
+    if (lhs->interp(env)->equals(rhs->interp(env)))
         return NEW(BoolVal)(true);
     else
         return NEW(BoolVal)(false);
 }
 
-
-// Returns a new Add expr with substituted parameters if applicable
-PTR(Expr) EqExpr::subst(std::string subStr, PTR(Expr) other){
-    PTR(Expr) new_lhs = lhs->subst(subStr, other);
-    PTR(Expr) new_rhs = rhs->subst(subStr, other);
-    return NEW(EqExpr)(new_lhs,new_rhs);
-};
 
 // Print Addition expr to ostream
 std::ostream& EqExpr::print(std::ostream& argument){
@@ -433,23 +372,15 @@ bool IfExpr::equals(PTR(Expr) other){
 }
 
 // Returns the calculated value as an int
-PTR(Val) IfExpr::interp(){
-    if(_if->interp()->equals(NEW(BoolVal)(true)))
-        return _then->interp();
-    else if(_if->interp()->equals(NEW(BoolVal)(false)))
-        return _else->interp();
+PTR(Val) IfExpr::interp(PTR(Env) env){
+    if(_if->interp(env)->equals(NEW(BoolVal)(true)))
+        return _then->interp(env);
+    else if(_if->interp(env)->equals(NEW(BoolVal)(false)))
+        return _else->interp(env);
     else
         throw std::runtime_error("If is a non-boolean value");
 }
 
-// Returns a new _let expr with substituted parameters if applicable
-PTR(Expr) IfExpr::subst(std::string subStr, PTR(Expr) other){
-
-    PTR(Expr) new_if = _if->subst(subStr,other);
-    PTR(Expr) new_then = _then->subst(subStr,other);
-    PTR(Expr) new_else = _else->subst(subStr,other);
-    return NEW(IfExpr)(new_if,new_then, new_else);
-};
 
 // Print _let expr to ostream
 std::ostream& IfExpr::print(std::ostream& argument){
@@ -507,18 +438,10 @@ bool FunExpr::equals(PTR(Expr) other){
 }
 
 
-PTR(Val) FunExpr::interp(){
-    return NEW(FunVal)(formal_arg, body);
+PTR(Val) FunExpr::interp(PTR(Env) env){
+    return NEW(FunVal)(formal_arg, body, env);
 }
 
-
-PTR(Expr) FunExpr::subst(std::string subStr, PTR(Expr) other){
-    PTR(Expr) new_body = body;
-    if(subStr != formal_arg){
-        new_body = body->subst(subStr, other);
-    }
-    return NEW(FunExpr)(formal_arg, new_body);
-};
 
 std::ostream& FunExpr::print(std::ostream& argument){
     
@@ -563,15 +486,10 @@ bool CallExpr::equals(PTR(Expr) other){
 }
 
 
-PTR(Val) CallExpr::interp(){
-    return to_be_called->interp()->call(actual_arg->interp());
+PTR(Val) CallExpr::interp(PTR(Env) env){
+    return to_be_called->interp(env)->call(actual_arg->interp(env));
 }
 
-PTR(Expr) CallExpr::subst(std::string subStr, PTR(Expr) other){
-    PTR(Expr) new_lhs = to_be_called->subst(subStr, other);
-    PTR(Expr) new_rhs = actual_arg->subst(subStr, other);
-    return NEW(CallExpr)(new_lhs,new_rhs);
-};
 
 std::ostream& CallExpr::print(std::ostream& argument){
     

@@ -11,6 +11,7 @@
 
 #include "pointer.h"
 #include <stdio.h>
+#include "cont.h"
 
 class Expr;
 class Env;
@@ -26,6 +27,8 @@ public:
     virtual bool equals(PTR(Val) other) = 0;
     virtual std::string to_string() = 0;
     virtual PTR(Val) call(PTR(Val) actual_arg) = 0;
+    virtual void call_step(PTR(Val) actual_arg, PTR(Cont) rest) = 0;
+    virtual bool is_true() = 0;
 
 };
 
@@ -40,6 +43,8 @@ public:
     virtual PTR(Val) call(PTR(Val) actual_arg);
 //    virtual std::ostream& print(std::ostream& argument);
 //    virtual std::ostream& pretty_print(std::ostream& argument);
+    virtual void call_step(PTR(Val) actual_arg, PTR(Cont) rest);
+    virtual bool is_true();
 };
 
 
@@ -52,6 +57,8 @@ public:
     virtual bool equals(PTR(Val) other);
     virtual std::string to_string();
     virtual PTR(Val) call(PTR(Val) actual_arg);
+    virtual void call_step(PTR(Val) actual_arg, PTR(Cont) rest);
+    virtual bool is_true();
 };
 
 class FunVal : public Val{
@@ -66,5 +73,7 @@ public:
     virtual bool equals(PTR(Val) other);
     virtual std::string to_string();
     virtual PTR(Val) call(PTR(Val) actual_arg);
+    virtual void call_step(PTR(Val) actual_arg, PTR(Cont) rest);
+    virtual bool is_true();
 };
 #endif /* val_h */

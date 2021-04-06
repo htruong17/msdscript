@@ -12,6 +12,7 @@
 #include "expr.h"
 #include "env.h"
 #include <string>
+#include "step.h"
 //#include "parse.h"
 //#include <sstream>
 
@@ -74,6 +75,14 @@ PTR(Val) NumVal::call(PTR(Val) actual_arg){
     throw std::runtime_error("call error for NumVal");
 }
 
+void NumVal::call_step(PTR(Val) actual_arg, PTR(Cont) rest) {
+    throw std::runtime_error("cannot call on Num");
+}
+
+bool NumVal::is_true(){
+    throw std::runtime_error("numbers cannot be true or false");
+}
+
 BoolVal::BoolVal(bool rep) {
     this->rep = rep;
 }
@@ -104,6 +113,14 @@ std::string BoolVal::to_string(){
 
 PTR(Val) BoolVal::call(PTR(Val) actual_arg){
     throw std::runtime_error("call error for BoolVal");
+}
+
+void BoolVal::call_step(PTR(Val) actual_arg, PTR(Cont) rest) {
+    throw std::runtime_error("cannot call on Bool");
+}
+
+bool BoolVal::is_true(){
+    return rep;
 }
 
 FunVal::FunVal(std::string formal_arg, PTR(Expr) body, PTR(Env) env){
@@ -139,6 +156,17 @@ PTR(Val) FunVal::call(PTR(Val) actual_arg){
 //        throw std::runtime_error("Call error for FunVal");
     return this->body->interp(NEW(ExtendedEnv)(formal_arg, actual_arg, env));
     //return this->body
+}
+
+void FunVal::call_step(PTR(Val) actual_arg, PTR(Cont) rest) {
+    Step::mode = Step::interp_mode;
+    Step::expr = body;
+    Step::env = NEW(ExtendedEnv)(formal_arg, actual_arg, env);
+    Step::cont = rest;
+}
+
+bool FunVal::is_true(){
+    throw std::runtime_error("Functions cannot be true or false");
 }
 
 

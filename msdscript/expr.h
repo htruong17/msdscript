@@ -21,6 +21,8 @@ typedef enum {
 
 class Val;
 class Env;
+class NumVal;
+class BoolVal;
 
 
 CLASS(Expr){
@@ -32,18 +34,21 @@ public:
     std::string to_pretty_string();
     virtual std::ostream& pretty_print(std::ostream& argument) = 0;
     virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS) = 0;
+    virtual void step_interp() = 0;
     
 };
 
 class NumExpr: public Expr{
 public:
     int rep;
+    PTR(NumVal) val;
     NumExpr(int rep);
     virtual bool equals(PTR(Expr) other);
     virtual PTR(Val) interp(PTR(Env) env);
     virtual std::ostream& print(std::ostream& argument);
     virtual std::ostream& pretty_print(std::ostream& argument);
     virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS);
+    virtual void step_interp();
 };
 
 class AddExpr: public Expr{
@@ -58,6 +63,7 @@ public:
     //std::string to_string();
     virtual std::ostream& pretty_print(std::ostream& argument);
     virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS);
+    virtual void step_interp();
 };
 
 class MultExpr: public Expr{
@@ -71,6 +77,7 @@ public:
     //std::string to_string();
     virtual std::ostream& pretty_print(std::ostream& argument);
     virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS);
+    virtual void step_interp();
 };
 
 class VarExpr: public Expr{
@@ -83,6 +90,7 @@ public:
     virtual std::ostream& print(std::ostream& argument);
     virtual std::ostream& pretty_print(std::ostream& argument);
     virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS);
+    virtual void step_interp();
 };
 
 class LetExpr: public Expr{
@@ -99,18 +107,20 @@ public:
     virtual std::ostream& pretty_print(std::ostream& argument);
     virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS);
     //std::string to_string();
+    virtual void step_interp();
 };
 
 class BoolExpr: public Expr{
 public:
     bool rep;
-    
+    PTR(BoolVal) val;
     BoolExpr(bool rep);
     virtual bool equals(PTR(Expr) other);
     virtual PTR(Val) interp(PTR(Env) env);
     virtual std::ostream& print(std::ostream& argument);
     virtual std::ostream& pretty_print(std::ostream& argument);
     virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS);
+    virtual void step_interp();
 };
 
 class EqExpr: public Expr{
@@ -124,6 +134,7 @@ public:
     virtual std::ostream& print(std::ostream& argument);
     virtual std::ostream& pretty_print(std::ostream& argument);
     virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS);
+    virtual void step_interp();
 };
 
 
@@ -139,6 +150,7 @@ public:
     virtual std::ostream& print(std::ostream& argument);
     virtual std::ostream& pretty_print(std::ostream& argument);
     virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS);
+    virtual void step_interp();
 };
 
 class FunExpr: public Expr{
@@ -152,6 +164,7 @@ public:
     virtual std::ostream& print(std::ostream& argument);
     virtual std::ostream& pretty_print(std::ostream& argument);
     virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS);
+    virtual void step_interp();
 };
 
 class CallExpr: public Expr{
@@ -165,5 +178,6 @@ public:
     virtual std::ostream& print(std::ostream& argument);
     virtual std::ostream& pretty_print(std::ostream& argument);
     virtual void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS);
+    virtual void step_interp();
 };
 #endif /* expr_hpp */

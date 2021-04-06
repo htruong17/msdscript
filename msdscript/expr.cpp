@@ -13,6 +13,8 @@
 #include <sstream>
 #include "val.h"
 #include "env.h"
+#include "step.h"
+#include "cont.h"
 
 // Converts Expr to regular print string
 std::string Expr::to_string(){
@@ -31,6 +33,7 @@ std::string Expr::to_pretty_string(){
 // Num constructor
 NumExpr::NumExpr(int rep) {
     this->rep = rep;
+    this->val = NEW(NumVal)(this->rep);
 }
 
 // Method to compare if this Num expression is equal to another expression
@@ -44,7 +47,7 @@ bool NumExpr::equals(PTR(Expr) other){
 
 // Returns the interpreted int value of the Num
 PTR(Val) NumExpr::interp(PTR(Env) env){
-    return NEW(NumVal)(this->rep);
+    return this->val;
 }
 
 
@@ -61,6 +64,12 @@ std::ostream& NumExpr::pretty_print(std::ostream& argument){
 // Helper function to assist with pretty_print for Num Expressions
 void NumExpr::pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS){
     argument << this->rep;
+}
+
+void NumExpr::step_interp() {
+    Step::mode = Step::continue_mode;
+    Step::val = NEW(NumVal)(rep);
+    Step::cont = Step::cont;
 }
 
 // Add constructor
@@ -113,6 +122,13 @@ std::ostream& AddExpr::pretty_print(std::ostream& argument){
     return std::cout;
 }
 
+void AddExpr::step_interp(){
+    Step::mode = Step::interp_mode;
+    Step::expr = lhs;
+    Step::env = Step::env;
+    Step::cont = NEW(RightThenAddCont)(rhs, Step::env, Step::cont);
+}
+
 
 // Mult constructor
 MultExpr::MultExpr(PTR(Expr) lhs, PTR(Expr) rhs) {
@@ -162,6 +178,13 @@ std::ostream& MultExpr::pretty_print(std::ostream& argument){
     return argument;
 }
 
+void MultExpr::step_interp() {
+    Step::mode = Step::interp_mode;
+    Step::expr = lhs;
+    Step::env = Step::env;
+    Step::cont = NEW(RightThenMultCont)(rhs, Step::env, Step::cont);
+}
+
 
 // Var constructor
 VarExpr::VarExpr(std::string str) {
@@ -197,6 +220,12 @@ std::ostream& VarExpr::pretty_print(std::ostream& argument){
 // Helper function to assist with pretty_print for var Expressions
 void VarExpr::pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS){
     argument << str;
+}
+
+void VarExpr::step_interp() {
+    Step::mode = Step::continue_mode;
+    Step::val = Step::env->lookup(str);
+    Step::cont = Step::cont;
 }
 
 // _let constructor
@@ -260,8 +289,16 @@ void LetExpr::pretty_print_at(print_mode_t mode, std::ostream& argument, int new
 
 }
 
+void LetExpr::step_interp() {
+    Step::mode = Step::interp_mode;
+    Step::expr = rhs;
+    Step::env = Step::env;
+    Step::cont = NEW(LetBodyCont)(variable, body, Step::env, Step::cont);
+}
+
 BoolExpr::BoolExpr(bool rep) {
     this->rep = rep;
+    this->val = NEW(BoolVal)(this->rep);
 }
 
 // Method to compare if this Num expression is equal to another expression
@@ -275,7 +312,7 @@ bool BoolExpr::equals(PTR(Expr) other){
 
 // Returns the interpreted int value of the Num
 PTR(Val) BoolExpr::interp(PTR(Env) env){
-    return NEW(BoolVal)(this->rep);
+    return this->val;
 }
 
 
@@ -301,6 +338,12 @@ void BoolExpr::pretty_print_at(print_mode_t mode, std::ostream& argument, int ne
         argument << "_false";
     else
         argument << "_true";
+}
+
+void BoolExpr::step_interp() {
+    Step::mode = Step::continue_mode;
+    Step::val = NEW(BoolVal)(rep);
+    Step::cont = Step::cont;
 }
 
 // Add constructor
@@ -354,6 +397,13 @@ void EqExpr::pretty_print_at(print_mode_t mode, std::ostream& argument, int newL
 std::ostream& EqExpr::pretty_print(std::ostream& argument){
     this->pretty_print_at(print_group_none, argument, 0, true);
     return std::cout;
+}
+
+void EqExpr::step_interp() {
+    Step::mode = Step::interp_mode;
+    Step::expr = lhs;
+    Step::env = Step::env;
+    Step::cont = NEW(RightThenEqCont)(rhs, Step::env, Step::cont);
 }
 
 IfExpr::IfExpr(PTR(Expr) _if, PTR(Expr) _then, PTR(Expr) _else) {
@@ -423,6 +473,13 @@ void IfExpr::pretty_print_at(print_mode_t mode, std::ostream& argument, int newL
 
 }
 
+void IfExpr::step_interp() {
+    Step::mode = Step::interp_mode;
+    Step::expr = _if;
+    Step::env = Step::env;
+    Step::cont = NEW(IfBranchCont)(_then, _else, Step::env, Step::cont);
+}
+
 
 FunExpr::FunExpr(std::string formal_arg, PTR(Expr) body) {
     this->formal_arg = formal_arg;
@@ -472,6 +529,12 @@ std::ostream& FunExpr::pretty_print(std::ostream& argument){
     return argument;
 }
 
+void FunExpr::step_interp() {
+    Step::mode = Step::continue_mode;
+    Step::val = NEW(FunVal)(formal_arg, body, Step::env);
+    Step::cont = Step::cont;
+}
+
 CallExpr::CallExpr(PTR(Expr) to_be_called, PTR(Expr) actual_arg) {
     this->to_be_called = to_be_called;
     this->actual_arg = actual_arg;
@@ -518,4 +581,10 @@ void CallExpr::pretty_print_at(print_mode_t mode, std::ostream& argument, int ne
 std::ostream& CallExpr::pretty_print(std::ostream& argument){
     this->pretty_print_at(print_group_none, argument, 0, true);
     return argument;
+}
+
+void CallExpr::step_interp() {
+    Step::mode = Step::interp_mode;
+    Step::expr = to_be_called;
+    Step::cont = NEW(ArgThenCallCont)(actual_arg, Step::env, Step::cont);
 }

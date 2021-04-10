@@ -40,6 +40,9 @@ PTR(Expr) parse_num(std::istream &in) {
         int c = in.peek();
         if (isdigit(c)) {
             consume(in, c);
+            if(n > (UINT32_MAX-(c-'0'))/10){
+                throw std::runtime_error("Error, result number is too large");
+            }
             n = n*10 + (c - '0');
             
         } else
@@ -345,6 +348,7 @@ TEST_CASE("More testing"){
     CHECK(parse_str("(_false)")->to_string() == "_false");
     CHECK(parse_str("(_false)")->to_pretty_string() == "_false");
 //    CHECK(parse_str("905162409((_fun (i) mwFWMVKE))((_let f=-1873773093 _in 71330000))")->to_pretty_string() == "905162409(_fun (i)\n            mwFWMVKE)(_let f = -1873773093\n                      _in  71330000)");
+    CHECK_THROWS_WITH(parse_str("10000000000000000000")->interp(Env::empty),"Error, result number is too large");
 }
 
 

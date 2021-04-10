@@ -49,14 +49,14 @@ PTR(Val) NumVal::add_to(PTR(Val) other_val){
     PTR(NumVal) other_num = CAST(NumVal)(other_val);
     if (other_num == NULL)
         throw std::runtime_error("add of non-number");
-    return NEW(NumVal)(rep + other_num->rep);
+    return NEW(NumVal)(((unsigned)rep + (unsigned)other_num->rep));
 }
 
 PTR(Val) NumVal::mult_by(PTR(Val) other_val){
     PTR(NumVal) other_num = CAST(NumVal)(other_val);
     if (other_num == NULL)
         throw std::runtime_error("mult of non-number");
-    return NEW(NumVal)(rep * other_num->rep);
+    return NEW(NumVal)(((unsigned)rep * (unsigned)other_num->rep));
 }
 
 bool NumVal::equals(PTR(Val) other){
@@ -205,4 +205,14 @@ TEST_CASE("to_string"){
     CHECK((NEW(BoolVal)(true))->to_string() == "_true");
     CHECK((NEW(BoolVal)(false))->to_string() == "_false");
     CHECK((NEW(FunVal)("x", NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(5)),Env::empty))->to_string() == "(_fun (x) (x+5))");
+}
+
+TEST_CASE("is true"){
+    CHECK_THROWS_WITH((NEW(NumVal)(24))->is_true(), "numbers cannot be true or false");
+    CHECK_THROWS_WITH((NEW(FunVal)("x", NEW(AddExpr)(NEW(VarExpr)("x"), NEW(NumExpr)(5)),Env::empty))->is_true(), "Functions cannot be true or false");
+}
+
+TEST_CASE("call step"){
+    CHECK_THROWS_WITH((NEW(NumVal)(24))->call_step(Step::val, Step::cont ), "cannot call on Num");
+    CHECK_THROWS_WITH((NEW(BoolVal)(false))->call_step(Step::val, Step::cont), "cannot call on Bool");
 }

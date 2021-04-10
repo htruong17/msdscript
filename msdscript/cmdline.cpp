@@ -14,6 +14,9 @@
 #include "parse.h"
 #include "val.h"
 #include "env.h"
+#include "step.h"
+#include "cont.h"
+#include "expr.h"
 
 bool tested = false;
 
@@ -32,6 +35,9 @@ int use_arguments(int argc, char **argv){
             exit(1);
         } else if(std::string(argv[1]) == "--interp"){
             std::cout << parse(std::cin)->interp(Env::empty)->to_string() << std::endl;
+            exit(0);
+        } else if(std::string(argv[1]) == "--step"){
+            std::cout << Step::interp_by_steps(parse(std::cin))->to_string()<<std::endl;
             exit(0);
         } else if(std::string(argv[1]) == "--print"){
             try{

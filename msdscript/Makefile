@@ -1,8 +1,9 @@
-INCS = cmdline.h expr.h parse.h val.h pointer.h env.h catch.h cont.h step.h
+INCS = cmdline.h expr.h parse.h val.h pointer.h env.h cont.h step.h
 
-OBJS = cmdline.o expr.o main.o parse.o val.o env.o cont.o step.o
+OBJS = cmdline.o expr.o main.o parse.o val.o env.o cont.o step.o test.o
 
-CXXFLAGS = --std=c++14 -O2 -Wall -fsanitize=undefined -fno-sanitize-recover=undefined
+#CXXFLAGS = --std=c++14 -O2 -Wall -fsanitize=undefined -fno-sanitize-recover=undefined
+CXXFLAGS = --std=c++14 -O2
 
 
 OTHERDIR = ../test_msdscript/test_msdscript
@@ -13,10 +14,13 @@ TEST_SRCS = $(OTHERDIR)/exec.cpp $(OTHERDIR)/testgen.cpp $(OTHERDIR)/test_msdscr
 
 msdscript: $(OBJS)
 	$(CXX) $(CXXFLAGS) -o msdscript $(OBJS)
+	
+#which_day: $(OBJS)
+#	$(CXX) $(CXXFLAGS) -o which_day $(OBJS)
 
 cmdline.o: $(INCS)
 expr.o: $(INCS)
-main.o: $(INCS)
+which_day.o: $(INCS)
 parse.o: $(INCS)
 val.o: $(INCS)
 env.o: $(INCS)

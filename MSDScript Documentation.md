@@ -1,4 +1,4 @@
-\*\*\*\* LIBRARY DESCRIPTION \*\*\*\*
+## LIBRARY DESCRIPTION
 
 MSDScript is an interpreter library built with C++. It is designed to
 operate a wide variety of functionalities through specific keywords in
@@ -24,11 +24,11 @@ it from GitHub. In terminal, type the command “make”. The file created
 is named “msdscript”.
 
 To build a library file for MSDScript, run the following commands in
-terminal: ar -ruv libmsdscript.a cont.o env.o expr.o parse.o step.o
-val.o cmdline.o test.o The library file is named “libmsdscript.a”.
+terminal: ````ar -ruv libmsdscript.a cont.o env.o expr.o parse.o step.o
+val.o cmdline.o test.o```` The library file is named “libmsdscript.a”.
 Note\* You will need to run make first to generate .o files
 
-\*\*\*\* USING MSDSCRIPT EXECUTABLE \*\*\*\*
+## USING MSDSCRIPT EXECUTABLE
 
 To run the executable file in terminal, enter the command
 

@@ -98,12 +98,36 @@ The result will be a 4. This means that on the 14th week (week starts
 from 0) of the year, the day 4 of that week is when the meeting will
 occur. Sunday is day 0 so day 4 will be a Thursday.
 
+## BUILT-IN KEYWORDS
+
+When writing expression strings, the following keywords are available:
+
+* `+` means Addition
+* `*` means Multiplication 
+* `==` means Equality 
+* `_let` binds a value expression
+    to a variable name in which the variable name can be used in the
+    body of the let expression 
+* `_in` assigned the body of the let
+    expression 
+* `_if` allows for conditional representation of two
+    different expressions. 
+* `_then` assigns an Expr that will run if the if
+    condition is met 
+* `_else` assigns and Expr that will run if the
+    condition isn't met 
+* `_true` means “true” boolean 
+* `_false` means “false”
+    boolean 
+* `_fun` allows for function expressions with variable name.
+    Function calls will replace variable with designated variable
+    expression.
+    
 ## MSDSCRIPT LANGUAGE
 
-**Note:** Parser function has a skip_whitespace helper function that
-removes any excess or unneccessary spaces. Pay attention to spacing with
-using keywords that starts with an underscore. Parentheses can also be
-used to indicate precedence.
+**Notes Regarding usages of Whitespace and Parentheses:** 
+Parser function has a `skip_whitespace` helper function that removes any excess or unneccessary spaces. MSDScript can handle any number of whitespaces between the languages, keywords, and grammars. The `parse_inner` function handles usages of parentheses around any expressions to set precedence or to clearly separate
+expressions. Any open parenthese will have to have a closing parenthese associated to it otherwise MSDScript will throw an error. Excess parentheses will be resolved automatically. Pay attention to each languages below as some will have specific usages of whitespace and parentheses.
 
 ### Numbers
 
@@ -236,22 +260,21 @@ of functions.
 
 ### Function Calls
 
-Format: `〈FunExpr〉(〈Expr〉)`
+Format: `〈Expr〉(〈Expr〉)`
 
-To call the function, use the format: `FunExpr(Expr)` Enclosed in
-parentheses is the defined function expression. In another enclosed
-parentheses is the `actual_arg Expr`, however, for the function call to
-work without any error, the `actual_arg Expr` will have to be an Expr
-that can be interped to a number value.
+To call the function, use the format: `Expr(Expr)`. The value of the leading `to_be_called` Expr will have to be a function for function calls to work.
+In another enclosed parentheses is the `actual_arg Expr`, however, for the function call to
+work without any error, the `actual_arg Expr` will have to be an Expr that can be interped to a number value.
 
 #### Example:
-* `_fun (x) x + 24 (3)` or `_fun(x)x+24(3)` interps to `27`
+* `(_fun (x) x + 24) (3)` or `(_fun(x)x+24)(3)` interps to `27`
 because the `actual_arg` of `3` gets passed onto the `formal_arg` variable
-`x`. Because the body `Expr` contains the variable `x`, `x` which is now `3` gets
-passed into the body `Expr`, resulting in `3+24`
-* `_fun (x) x * x (_if 3==3 _then _true _else _false)` will result in a `runtime error` because the
+`x`. In this case, we enclosed the function Expr in parentheses to set it as the `to_be_called` Expr.
+* `_let f = _fun (x) x + 24 _in f(3)` also interps to `27` because we used Let expression to set the function as `f`. The function call format `f(3)`
+takes the `actual_arg` of `3` and passes that into the `to_be_called` Expr. In this case, the `to_be_called` Expr, `f`, does not need parentheses.
+* `(_fun (x) x * x) (_if 3==3 _then _true _else _false)` will result in a `runtime error` because the
 `actual_arg Expr` resulted in a `boolean` value when interpreted 
-* `_fun (x) x + 24 (3) + 5` does not need extra parentheses like `IfExpr` and
+* `(_fun (x) x + 24) (3) + 5` does not need extra parentheses like `IfExpr` and
 `LetExpr` when chaining with other operations because parentheses are
 already used to define the Function and its call argument.
 
@@ -348,31 +371,6 @@ sub-types.
     evaluate the function.
 
     Constructor: `CallExpr(PTR(Expr) to_be_called, PTR(Expr) actual_arg);`
-
-## BUILT-IN FUNCTIONS
-
-When writing expression strings, the following keywords are available:
-
-* `+` means Addition
-* `*` means Multiplication 
-* `==` means Equality 
-* `_let` binds a value expression
-    to a variable name in which the variable name can be used in the
-    body of the let expression 
-* `_in` assigned the body of the let
-    expression 
-* `_if` allows for conditional representation of two
-    different expressions. 
-* `_then` assigns an Expr that will run if the if
-    condition is met 
-* `_else` assigns and Expr that will run if the
-    condition isn't met 
-* `_true` means “true” boolean 
-* `_false` means “false”
-    boolean 
-* `_fun` allows for function expressions with variable name.
-    Function calls will replace variable with designated variable
-    expression.
 
 ## MSDSCRIPT API
 

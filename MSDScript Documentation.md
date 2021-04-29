@@ -250,98 +250,79 @@ sub-types.
 
 #### Expr Sub-Types:
 
-##### NUMBERS (NumExpr)
+* ##### NUMBERS (NumExpr)
 
-Constructor: NumExpr(int rep);
+    NumExpr are the expression representation of integer values in
+    MSDScript.
+    
+    Constructor: `NumExpr(int rep);`
 
-NumExpr are the expression representation of integer values in
-MSDScript.
+* ##### ADDITION (AddExpr)
 
-* * * * *
+    Script representation of addition (+). The left-hand side and right-hand
+    side can be any sub-type Expr.
 
-##### ADDITION (AddExpr)
+    Constructor: `AddExpr(PTR(Expr) lhs, PTR(Expr) rhs);`
 
-Constructor: AddExpr(PTR(Expr) lhs, PTR(Expr) rhs);
+* ##### MULTIPLICATION (MultExpr)
 
-Script representation of addition (+). The left-hand side and right-hand
-side can be any sub-type Expr.
+    Script representation of multiplication (*). The left-hand side and
+    right-hand side can be any sub-type Expr.
 
-* * * * *
+    Constructor: `MultExpr(PTR(Expr) lhs, PTR(Expr) rhs);`
 
-##### MULTIPLICATION (MultExpr)
+* ##### VARIABLE (VarExpr)
 
-Constructor: MultExpr(PTR(Expr) lhs, PTR(Expr) rhs);
+    Script representation of variables. Must be at least one character long
+    and can only consist of lowercase or uppercase alphabet letters.
 
-Script representation of multiplication (\*). The left-hand side and
-right-hand side can be any sub-type Expr.
+    Constructor: `VarExpr(std::string str);`
 
-* * * * *
+* ##### VARIABLE ASSIGNMENT (LetExpr)
 
-##### VARIABLE (VarExpr)
+    Script representation of variable assignment. The right-hand side Expr
+    is assigned to a variable name. If the body Expr contains the variable
+    name, then the variable gets replaced with the right-hand side Expr.
 
-Constructor: VarExpr(std::string str);
+    Constructor: `LetExpr(std::string variable, PTR(Expr) rhs, PTR(Expr) body);`
 
-Script representation of variables. Must be at least one character long
-and can only consist of lowercase or uppercase alphabet letters.
+* ##### BOOLEAN (BoolExpr)
 
-* * * * *
+    Script representation of booleans. The Expr can only store true or false
+    values as its rep.
+    
+    Constructor: `BoolExpr(bool rep);`
 
-##### VARIABLE ASSIGNMENT (LetExpr)
+* ##### EQUALITY (EqExpr)
 
-Constructor: LetExpr(std::string variable, PTR(Expr) rhs, PTR(Expr)
-body);
+    Script representation of a comparison check (==). The left-hand and
+    right-hand side can be any sub-type Expr.
 
-Script representation of variable assignment. The right-hand side Expr
-is assigned to a variable name. If the body Expr contains the variable
-name, then the variable gets replaced with the right-hand side Expr.
+    Constructor: `EqExpr(PTR(Expr) lhs, PTR(Expr) rhs);`
 
-* * * * *
+* ##### IF CONDITIONS (IfExpr)
 
-##### BOOLEAN (BoolExpr)
+    Script representation of conditional branching. The _if parameter is an
+    Expr that serves as a test condition. If the condition is met, the _then
+    Expr is the path that is followed, otherwise it follows the _else Expr
+    path.
 
-Constructor: BoolExpr(bool rep);
+Constructor: `IfExpr(PTR(Expr) *if, PTR(Expr) *then, PTR(Expr) _else);`
 
-Script representation of booleans. The Expr can only store true or false
-values as its rep.
+* ##### FUNCTION (FunExpr)
 
-* * * * *
+    Script representation of a function definition. The parameter
+    formal_arg is the argument that can be applied to the body Expr.
 
-##### EQUALITY (EqExpr)
+    Constructor: `FunExpr(std::string formal_arg, PTR(Expr) body);`
 
-Constructor: EqExpr(PTR(Expr) lhs, PTR(Expr) rhs);
+* ##### FUNCTION CALLS (CallExpr)
 
-Script representation of a comparison check (==). The left-hand and
-right-hand side can be any sub-type Expr.
+    Script representation of a function call. The to_be_called parameter
+    is the defined function and the actual_arg is the argument used to
+    evaluate the function.
 
-* * * * *
-
-##### IF CONDITIONS (IfExpr)
-
-Constructor: IfExpr(PTR(Expr) *if, PTR(Expr) *then, PTR(Expr) \_else);
-
-Script representation of conditional branching. The *if parameter is an
-Expr that serves as a test condition. If the condition is met, the *then
-Expr is the path that is followed, otherwise it follows the \_else Expr
-path.
-
-* * * * *
-
-##### FUNCTION (FunExpr)
-
-Constructor: FunExpr(std::string formal\_arg, PTR(Expr) body);
-
-Script representation of a function definition. The parameter
-formal\_arg is the argument that can be applied to the body Expr.
-
-* * * * *
-
-##### FUNCTION CALLS (CallExpr)
-
-Constructor: CallExpr(PTR(Expr) to\_be\_called, PTR(Expr) actual\_arg);
-
-Script representation of a function call. The to\_be\_called parameter
-is the defined function and the actual\_arg is the argument used to
-evaluate the function.
+    Constructor: `CallExpr(PTR(Expr) to_be_called, PTR(Expr) actual_arg);`
 
 ## BUILT-IN FUNCTIONS
 
@@ -370,9 +351,10 @@ When writing expression strings, the following keywords are available:
 
 ## MSDSCRIPT API \*\*\*\*
 
-`expr.cpp and expr.h`: Main files for expression representations.
+### expr.cpp and expr.h: 
+Main files for expression representations.
 
-### Methods: 
+##### Methods: 
 * `bool equals(PTR(Expr) other)`: Checks if two expressions are the same. 
 * `PTR(Val) interp(PTR(Env) env)`: Evaluate the expression for the result. 
 * `std::ostream& print(std::ostream& argument)`: Prints out the Expr to the outstream. 
@@ -382,17 +364,17 @@ When writing expression strings, the following keywords are available:
 * `void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS)`: Helper method that determines the correct spacing and usages of parentheses.
 *`void step_interp()`: Evaluate the expression using explicit continuation (interpreting by steps)
 
-**Also see MSDSCRIPT GRAMMER for more details.**
+*Also see MSDSCRIPT GRAMMER for more details.*
 
 * * * * *
 
-`val.cpp and val.h`: Stores interpreted values as a Val Class object
-instead of an Expr Class object.
+### val.cpp and val.h: 
+Stores interpreted values as a Val Class object instead of an Expr Class object.
 
 Interpretting FunExpr returns FunVal while interpretting BoolExp returns
 BoolVal. Any other Expr interpretation returns NumVal.
 
-### Methods:
+##### Methods:
 
 * `PTR(Val) add_to(PTR(Val) other_val)`: Helper method to add values together and return the result as a Val object. 
 * `PTR(Val) mult_by(PTR(Val) other_val)`: Helper method to multiples values together and return the result as a Val object. 
@@ -404,41 +386,44 @@ BoolVal. Any other Expr interpretation returns NumVal.
 
 * * * * *
 
-`env.cpp and env.h`: Environment for referencing of values; similar to
+### env.cpp and env.h: 
+Environment for referencing of values; similar to
 substitution functionality
 
-### Properties:
+##### Properties:
 
 * `static PTR(Env) empty`: Represents an empty environment.
 
-### Methods:
+##### Methods:
 
 * `PTR(Val) lookup(std::string find_name)`: Find the value of a variable.
 
 * * * * *
 
-`cont.cpp and cont.h`: Allows for step mode interpretation that avoids
+### cont.cpp and cont.h: 
+Allows for step mode interpretation that avoids
 using C++ stack to prevent segmentation faults for large recursive
 expressions
 
-### Properties:
+##### Properties:
 
 * `static PTR(Cont) done`: Finished. No more need for continue steps.
 
-### Methods:
+##### Methods:
 
 * `step_continue()`: Sets the mode to either interp\_mode or continue\_mode
 in Step Class.
 
 * * * * *
 
-`step.cpp and step.h`: Allows for step mode interpretation. Runs step by
+### step.cpp and step.h:
+Allows for step mode interpretation. Runs step by
 step until PTR(Cont) done is reached.
 
-### enum: 
+##### enum: 
 * mode_t consists of two modes, `interp_mode` or `continue_mode`
 
-### Properties: 
+##### Properties: 
 * `static mode_t mode`: Represents the mode from enum mode_t.
 The `interp_mode` indicates that start expression interpretation while
 * `continue_mode` deliver values to a continuation. 
@@ -447,21 +432,22 @@ The `interp_mode` indicates that start expression interpretation while
 * `static PTR(Val) val`: Contains the value to be delivered to the continuation.
 * `static PTR(Cont) cont`: Represents the next step in continuation.
 
-### Methods: 
+##### Methods: 
 * `static PTR(Val) interp_by_steps(PTR(Expr) e)`: Interp
 expression by stepping. Avoids recursive calls at C++ stack level that
 causes stack overflow.
 
 * * * * *
 
-`parse.cpp and parse.h`: Parses strings into expressions
+### parse.cpp and parse.h:
+Parses strings into expressions
 
-### Functions: 
+##### Functions: 
 * `PTR(Expr) parse(std::istream &in)`: Parses command line
 expressions into Expr object. 
 * `PTR(Expr) parse_str(std::string s)`: Parses expression string to Expr object.
 
-### Helper Functions: 
+##### Helper Functions: 
 * `static void consume(std::istream &in, int expect)`: If the current in-stream character is equal to the expected char, then
 fetch that character from the in-stream. 
 * `static void skip_whitespace(std::istream &in)`: Removes/skip unneccessary spaces.
@@ -480,7 +466,7 @@ the main parse and parse_str functions. Parses comparative expressions or return
 * `PTR(Expr) parse_inner(std::istream &in)`: Parses numbers, new Expr, variables, let expressions, boolean expressions, if expressions, and function
 expressions.
 
-**Parsing Grammar displayed visually:**
+##### Parsing Grammar displayed visually:
 ```
 〈expr〉=〈comparg〉 
                 |〈comparg〉==〈expr〉
@@ -505,16 +491,18 @@ expressions.
 ```
 * * * * *
 
-`cmdline.cpp and cmdline.h`: Allows for specific calls of the different
+### cmdline.cpp and cmdline.h: 
+Allows for specific calls of the different
 modes available for MSDScript
 
-### Functions: 
+##### Functions: 
 `int use_arguments(int argc, char **argv)`: Takes in command
 line arguments and execute designated modes.
 
 * * * * *
 
-`pointer.h`: Shared pointers used to help with memory leaks
+### pointer.h:
+Shared pointers used to help with memory leaks
 
 The following macros are used to make code more readable:
 
@@ -528,7 +516,8 @@ THIS | shared_from_this()
 
 * * * * *
 
-`catch.h`: Testing library used to test MSDScript functionalities. Tests
+### catch.h: 
+Testing library used to test MSDScript functionalities. Tests
 can be found at the end of each .cpp files. Expr tests are in test.cpp
 
 ## POTENTIAL ERRORS

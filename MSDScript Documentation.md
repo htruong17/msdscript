@@ -4,18 +4,22 @@ MSDScript is an interpreter library built with C++. It is designed to
 operate a wide variety of functionalities through specific keywords in
 command line.
 
-This library can perform the following: -Addition -Multiplication
--Functions -Expression Comparison -Print/Pretty-Print
+This library can perform the following: 
+* Addition 
+* Multiplication
+* Functions
+* Expression Comparison 
+* Print/Pretty-Print
 
-The following modes are available: --help: lists available mode for
-library --test: runs a series of test to verify that built-in functions
-are working as expected --interp: interprets expression string for
-result —-step: similar to interp mode but uses explicit continuation
-instead of relying on C++ stack —-print: prints out a condensed
-expression string —-pretty-print: prints out the expression string that
-is more legible with proper spacing and usages of parentheses
+The following modes are available: 
+* `--help`: lists available mode for library 
+* `--test`: runs a series of test to verify that built-in functions are working as expected 
+* `--interp`: interprets expression string for result 
+* `--step`: similar to interp mode but uses explicit continuation instead of relying on C++ stack 
+* `--print`: prints out a condensed expression string 
+* `--pretty-print`: prints out the expression string that is more legible with proper spacing and usages of parentheses
 
-\*\*\*\* GETTING STARTED \*\*\*\*
+## GETTING STARTED
 
 To build and create the executable ‘msdscript’ file, ensure that the
 directory in terminal contains the Makefile and the source files. The
@@ -24,8 +28,8 @@ it from GitHub. In terminal, type the command “make”. The file created
 is named “msdscript”.
 
 To build a library file for MSDScript, run the following commands in
-terminal: ````ar -ruv libmsdscript.a cont.o env.o expr.o parse.o step.o
-val.o cmdline.o test.o```` The library file is named “libmsdscript.a”.
+terminal: `ar -ruv libmsdscript.a cont.o env.o expr.o parse.o step.o
+val.o cmdline.o test.o` The library file is named “libmsdscript.a”.
 Note\* You will need to run make first to generate .o files
 
 ## USING MSDSCRIPT EXECUTABLE
@@ -41,7 +45,7 @@ For example, interp mode can be accessed with the following command:
 Note: When executing command lines, it is necessary to hit Ctrl+D
 instead of return to begin program execution.
 
-\*\*\*\* USING MSDSCRIPT LIBRARY FILE \*\*\*\*
+## USING MSDSCRIPT LIBRARY FILE
 
 The library file allows for MSDScript to be linked to different programs
 for specific needs. MSDScript has a built-in parsing functionality that
@@ -84,6 +88,133 @@ In this example, if we run the command:
 The result will be a 4. This means that on the 14th week (week starts
 from 0) of the year, the day 4 of that week is when the meeting will
 occur. Sunday is day 0 so day 4 will be a Thursday.
+
+## MSDSCRIPT LANGUAGE
+
+Note\* Parser function has a skip\_whitespace helper function that
+removes any excess or unneccessary spaces. Pay attention to spacing with
+using keywords that starts with an underscore. parentheses can also be
+used to indicate precedence.
+
+ADDITION
+
+Format: 〈Expr〉+〈Expr〉
+
+Addition is designated by the + symbol that adds any two Exprs. No
+spacing needed between +.
+
+Examples: "1+1" or "1 + 1" will be interpreted to a value of 2 "x+1" or
+"x + 1" is acceptable as well but will not interp because varible is not
+assigned and handled with. "3+(3+1)" or "3 + (3+1)" will interp to 7.
+Multiple operations can be chained together and the usages of
+parentheses in this causes tells MSDScript to interp 3+1 first. "(3 + 3)
++ 1" is the same as "3 + 3 + 1" because the parentheses are not needed
+due to right-associative.
+
+MULTIPLICATION
+
+Format: 〈Expr〉\*〈Expr〉
+
+Multiplication is designed by the \* symbol that multiples any two
+Exprs. No spacing needed between \*.
+
+Examples: "2*3" or "2 * 3" will interp to a value of 6 "2 \* x" will
+cause an interp error because the variable is not assigned. "2 + 4 \* 2"
+will interp to 10 because multiplication has higher precedence than
+addition so interp will first do 4 \* 2 and then add 2 to that 8. "(2 +
+4) \* 2" will interp to 12 because parentheses takes higher precedence
+so the expression will be similar to 6 \* 2.
+
+EQUALITY
+
+Format: 〈Expr〉==〈Expr〉
+
+True or false booleans are recognized as *true or *false.
+
+Comparison for equality is designed by == between any two Exprs. No
+spacing is needed between ==
+
+Examples: "2 == 2" or "*true==*true" will interp to true "2==3 or
+"\_false == 3" will interp to false "2 + (4 \* 3) == 2 + 4 \* 3" is also
+acceptable because we can compare if the interp of rhs and lhs Exprs
+will be the same value. In this case the comparison will be true
+
+LET
+
+Format: *let〈String〉=〈Expr〉*in 〈Expr〉
+
+Variable assignment with *let will require a specific format with
+spacing. The expression uses two keywords: *let and *in The format
+starts with us using *let to declare a variable. There has to be a space
+between they keyword *let and the variable. After the variable you will
+need to use = to assign an Expr to the variable. Next, the keyword *in
+has to have a space behind it that separate it from the body Expr that
+received the variable assignment.
+
+Examples: "*let x=1*in x+4" or "*let x=1 *in x+4" are both acceptable
+but the second is preferred because the space in front of \_in makes it
+look more clean. Interping this will result in the value 1 replacing the
+variable x, leaving us with 1+4 which interps to 5.
+
+"5 \* *let x = 4 *in x + 2" does not need usages of parentheses because
+the addition is chained in front of the LetExpr. If chained behind
+without parentheses, MSDScript will treat the 5 as part of the body Expr
+in *let, such as "*let x=4 \_in x+2*5". The front-chain will interp to
+30 while the back-chain will interp to 40. To properly chain an
+operation behind a LetExpr, use parentheses around the LetExpr such as
+"(*let x = 4 *in x + 2) * 5".
+
+IF
+
+Format: *if〈Expr〉*then〈Expr〉\_else〈Expr〉
+
+If conditional branching uses three keywords: *if, *then and *else; Be
+sure to have a space after each of these keywords IfExpr string format
+starts with *if followed by an Expr that serves as a test condition. For
+IfExpr to work, the test condition Expr has to return an interp boolean
+value. Next, *then branches to an Expr that gets called if the test
+condition is true while. The *else keyword branches to another Expr if
+the test condition is false.
+
+Examples: "*if 3==3 *then 3*3 *else 3+3" will return an interped value
+of 9 because the test condition Expr 3=3 is true so the IfExpr follows
+the *then Expr of 3*3 "*if *false *then 2+4 *else *let x=1*in x+4" will
+branch down to the *else clause when interped, resulting in a value of 5
+"*if 1+3 *then 2+4 *else 4\*5" will throw an error because the condition
+Expr is not a boolean expression "(*if 1+3 == 2+2 *then 2+4 \_else 4\*5)
++ 3" requires parentheses around the IfExpr because we are chaining an
+addition at the end, similar to the chaining example for LetExpr
+
+FUNCTIONS
+
+Format: \_fun (〈String〉)〈Expr〉
+
+To define a function, we start with \_fun followed by a variable that is
+enclosed in parentheses. After the closing parenthese is a body Expr of
+any sort.
+
+Example: "*fun (x) x + 24" or "*fun(x)x+24" are valid string expression
+of functions.
+
+FUNCTION CALLS
+
+Format: (〈FunExpr〉)(〈Expr〉)
+
+To call the function, use the format: (FunExpr)(Expr) Enclosed in
+parentheses is the defined function expression. In another enclosed
+parentheses is the actual\_arg Expr, however, for the function call to
+work without any error, the actual\_arg Expr will have to be an Expr
+that can be interped to a number value.
+
+Example: "(*fun (x) x + 24)(3)" or "(*fun(x)x+24)(3)" interps to 27
+because the actual\_arg of 3 gets passed onto the formal\_arg variable
+x. Because the body Expr contains the variable x, x which is now 3 gets
+passed into the body Expr, resulting in 3+24 "(*fun (x) x \* x)(*if 3==3
+*then *true *else *false)" will result in a runtime error because the
+actual\_arg Expr resulted in a boolean value when interpreted "(\_fun
+(x) x + 24)(3) + 5" does not need extra parentheses like IfExpr and
+LetExpr when chaining with other operations because parentheses are
+already used to define the Function and its call argument.
 
 \*\*\*\* MSDSCRIPT GRAMMAR \*\*\*\*
 
@@ -218,133 +349,7 @@ When writing expression strings, the following keywords are available:
     Function calls will replace variable with designated variable
     expression.
 
-\*\*\* HOW TO WRITE EACH EXPRESSION STRINGS \*\*\*\*
-
-Note\* Parser function has a skip\_whitespace helper function that
-removes any excess or unneccessary spaces. Pay attention to spacing with
-using keywords that starts with an underscore. parentheses can also be
-used to indicate precedence.
-
-ADDITION
-
-Format: 〈Expr〉+〈Expr〉
-
-Addition is designated by the + symbol that adds any two Exprs. No
-spacing needed between +.
-
-Examples: "1+1" or "1 + 1" will be interpreted to a value of 2 "x+1" or
-"x + 1" is acceptable as well but will not interp because varible is not
-assigned and handled with. "3+(3+1)" or "3 + (3+1)" will interp to 7.
-Multiple operations can be chained together and the usages of
-parentheses in this causes tells MSDScript to interp 3+1 first. "(3 + 3)
-+ 1" is the same as "3 + 3 + 1" because the parentheses are not needed
-due to right-associative.
-
-MULTIPLICATION
-
-Format: 〈Expr〉\*〈Expr〉
-
-Multiplication is designed by the \* symbol that multiples any two
-Exprs. No spacing needed between \*.
-
-Examples: "2*3" or "2 * 3" will interp to a value of 6 "2 \* x" will
-cause an interp error because the variable is not assigned. "2 + 4 \* 2"
-will interp to 10 because multiplication has higher precedence than
-addition so interp will first do 4 \* 2 and then add 2 to that 8. "(2 +
-4) \* 2" will interp to 12 because parentheses takes higher precedence
-so the expression will be similar to 6 \* 2.
-
-EQUALITY
-
-Format: 〈Expr〉==〈Expr〉
-
-True or false booleans are recognized as *true or *false.
-
-Comparison for equality is designed by == between any two Exprs. No
-spacing is needed between ==
-
-Examples: "2 == 2" or "*true==*true" will interp to true "2==3 or
-"\_false == 3" will interp to false "2 + (4 \* 3) == 2 + 4 \* 3" is also
-acceptable because we can compare if the interp of rhs and lhs Exprs
-will be the same value. In this case the comparison will be true
-
-LET
-
-Format: *let〈String〉=〈Expr〉*in 〈Expr〉
-
-Variable assignment with *let will require a specific format with
-spacing. The expression uses two keywords: *let and *in The format
-starts with us using *let to declare a variable. There has to be a space
-between they keyword *let and the variable. After the variable you will
-need to use = to assign an Expr to the variable. Next, the keyword *in
-has to have a space behind it that separate it from the body Expr that
-received the variable assignment.
-
-Examples: "*let x=1*in x+4" or "*let x=1 *in x+4" are both acceptable
-but the second is preferred because the space in front of \_in makes it
-look more clean. Interping this will result in the value 1 replacing the
-variable x, leaving us with 1+4 which interps to 5.
-
-"5 \* *let x = 4 *in x + 2" does not need usages of parentheses because
-the addition is chained in front of the LetExpr. If chained behind
-without parentheses, MSDScript will treat the 5 as part of the body Expr
-in *let, such as "*let x=4 \_in x+2*5". The front-chain will interp to
-30 while the back-chain will interp to 40. To properly chain an
-operation behind a LetExpr, use parentheses around the LetExpr such as
-"(*let x = 4 *in x + 2) * 5".
-
-IF
-
-Format: *if〈Expr〉*then〈Expr〉\_else〈Expr〉
-
-If conditional branching uses three keywords: *if, *then and *else; Be
-sure to have a space after each of these keywords IfExpr string format
-starts with *if followed by an Expr that serves as a test condition. For
-IfExpr to work, the test condition Expr has to return an interp boolean
-value. Next, *then branches to an Expr that gets called if the test
-condition is true while. The *else keyword branches to another Expr if
-the test condition is false.
-
-Examples: "*if 3==3 *then 3*3 *else 3+3" will return an interped value
-of 9 because the test condition Expr 3=3 is true so the IfExpr follows
-the *then Expr of 3*3 "*if *false *then 2+4 *else *let x=1*in x+4" will
-branch down to the *else clause when interped, resulting in a value of 5
-"*if 1+3 *then 2+4 *else 4\*5" will throw an error because the condition
-Expr is not a boolean expression "(*if 1+3 == 2+2 *then 2+4 \_else 4\*5)
-+ 3" requires parentheses around the IfExpr because we are chaining an
-addition at the end, similar to the chaining example for LetExpr
-
-FUNCTIONS
-
-Format: \_fun (〈String〉)〈Expr〉
-
-To define a function, we start with \_fun followed by a variable that is
-enclosed in parentheses. After the closing parenthese is a body Expr of
-any sort.
-
-Example: "*fun (x) x + 24" or "*fun(x)x+24" are valid string expression
-of functions.
-
-FUNCTION CALLS
-
-Format: (〈FunExpr〉)(〈Expr〉)
-
-To call the function, use the format: (FunExpr)(Expr) Enclosed in
-parentheses is the defined function expression. In another enclosed
-parentheses is the actual\_arg Expr, however, for the function call to
-work without any error, the actual\_arg Expr will have to be an Expr
-that can be interped to a number value.
-
-Example: "(*fun (x) x + 24)(3)" or "(*fun(x)x+24)(3)" interps to 27
-because the actual\_arg of 3 gets passed onto the formal\_arg variable
-x. Because the body Expr contains the variable x, x which is now 3 gets
-passed into the body Expr, resulting in 3+24 "(*fun (x) x \* x)(*if 3==3
-*then *true *else *false)" will result in a runtime error because the
-actual\_arg Expr resulted in a boolean value when interpreted "(\_fun
-(x) x + 24)(3) + 5" does not need extra parentheses like IfExpr and
-LetExpr when chaining with other operations because parentheses are
-already used to define the Function and its call argument. \*\*\*\*
-MSDSCRIPT API \*\*\*\*
+\*\*\*\*MSDSCRIPT API \*\*\*\*
 
 expr.cpp and expr.h:
 

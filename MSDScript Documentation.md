@@ -28,7 +28,7 @@ is named `msdscript`.
 
 To build a library file for MSDScript, run the following commands in
 terminal:\
-`ar -ruv libmsdscript.a cont.o env.o expr.o parse.o step.o val.o cmdline.o test.o`\
+`ar -ruv libmsdscript.a cont.o env.o expr.o parse.o step.o val.o cmdline.o test.o`
 
 The library file is named `libmsdscript.a`.
 
@@ -105,6 +105,33 @@ removes any excess or unneccessary spaces. Pay attention to spacing with
 using keywords that starts with an underscore. Parentheses can also be
 used to indicate precedence.
 
+### Numbers
+
+Format: `〈int〉`
+
+Number inputs should be integers with no decimals allowed. An optional minus sign in front of the digits can be used to signify negative numbers.
+Be sure to have no spacing between the minus sign and the digits.
+
+#### Examples:
+* `24`
+* `-81`
+
+### Variables
+
+Format: `〈string〉`
+
+Variables can be a single alphabet character or a continuous (no space) string of characters. Variables can either be lowercase, uppercase, or both.
+
+#### Examples:
+* `x` or `X`
+* `myVar`
+
+### Booleans
+
+Format: `〈string〉`
+
+True or false booleans are recognized as `_true` or `_false`.
+
 ### Addition
 
 Format: `〈Expr〉+〈Expr〉`
@@ -137,8 +164,6 @@ so the expression will be similar to `6 * 2`.
 ### Equality
 
 Format: `〈Expr〉==〈Expr〉`
-
-True or false booleans are recognized as `_true` or `_false`.
 
 Comparison for equality is designed by `==` between any two Exprs. No
 spacing is needed between `==`
@@ -238,7 +263,7 @@ MSDScript is designed to parse expression strings into Expr objects that
 are used to perform basic calculations, variable assignment,
 comparisons, and function calls.
 
-The function: `PTR(Expr) parse(std::istream &in)`
+Function: `PTR(Expr) parse(std::istream &in)`
 
 * Takes an istream input and converts it to an Expr
 
@@ -307,7 +332,7 @@ sub-types.
     Expr is the path that is followed, otherwise it follows the _else Expr
     path.
 
-Constructor: `IfExpr(PTR(Expr) *if, PTR(Expr) *then, PTR(Expr) _else);`
+    Constructor: `IfExpr(PTR(Expr) *if, PTR(Expr) *then, PTR(Expr) _else);`
 
 * ##### FUNCTION (FunExpr)
 
@@ -349,7 +374,7 @@ When writing expression strings, the following keywords are available:
     Function calls will replace variable with designated variable
     expression.
 
-## MSDSCRIPT API \*\*\*\*
+## MSDSCRIPT API
 
 ### expr.cpp and expr.h: 
 Main files for expression representations.
@@ -475,7 +500,7 @@ expressions.
                 |〈addend〉+〈comparg〉
 
 〈addend〉=〈multicand〉 
-                |〈multicand〉\*〈addend〉
+                |〈multicand〉*〈addend〉
 
 〈multicand〉=〈inner〉 
                 |〈multicand〉(〈expr〉)

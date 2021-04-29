@@ -232,29 +232,25 @@ already used to define the Function and its call argument.
 
 ## MSDSCRIPT GRAMMAR
 
-PARSE
+### Parse
 
 MSDScript is designed to parse expression strings into Expr objects that
 are used to perform basic calculations, variable assignment,
 comparisons, and function calls.
 
-The function: PTR(Expr) parse(std::istream &in)
+The function: `PTR(Expr) parse(std::istream &in)`
 
--Takes an istream input and converts it to an Expr
+* Takes an istream input and converts it to an Expr
 
-* * * * *
-
-EXPR
+### Expr
 
 Expr or expressions stores input information that MSDScript uses to
 perform specific operations. In the Expr Class, there are many Expr
 sub-types.
 
-Expr Sub-Types:
+#### Expr Sub-Types:
 
-* * * * *
-
-NUMBERS (NumExpr)
+##### NUMBERS (NumExpr)
 
 Constructor: NumExpr(int rep);
 
@@ -263,7 +259,7 @@ MSDScript.
 
 * * * * *
 
-ADDITION (AddExpr)
+##### ADDITION (AddExpr)
 
 Constructor: AddExpr(PTR(Expr) lhs, PTR(Expr) rhs);
 
@@ -272,7 +268,7 @@ side can be any sub-type Expr.
 
 * * * * *
 
-MULTIPLICATION (MultExpr)
+##### MULTIPLICATION (MultExpr)
 
 Constructor: MultExpr(PTR(Expr) lhs, PTR(Expr) rhs);
 
@@ -281,7 +277,7 @@ right-hand side can be any sub-type Expr.
 
 * * * * *
 
-VARIABLE (VarExpr)
+##### VARIABLE (VarExpr)
 
 Constructor: VarExpr(std::string str);
 
@@ -290,7 +286,7 @@ and can only consist of lowercase or uppercase alphabet letters.
 
 * * * * *
 
-VARIABLE ASSIGNMENT (LetExpr)
+##### VARIABLE ASSIGNMENT (LetExpr)
 
 Constructor: LetExpr(std::string variable, PTR(Expr) rhs, PTR(Expr)
 body);
@@ -301,7 +297,7 @@ name, then the variable gets replaced with the right-hand side Expr.
 
 * * * * *
 
-BOOLEAN (BoolExpr)
+##### BOOLEAN (BoolExpr)
 
 Constructor: BoolExpr(bool rep);
 
@@ -310,7 +306,7 @@ values as its rep.
 
 * * * * *
 
-EQUALITY (EqExpr)
+##### EQUALITY (EqExpr)
 
 Constructor: EqExpr(PTR(Expr) lhs, PTR(Expr) rhs);
 
@@ -319,7 +315,7 @@ right-hand side can be any sub-type Expr.
 
 * * * * *
 
-IF CONDITIONS (IfExpr)
+##### IF CONDITIONS (IfExpr)
 
 Constructor: IfExpr(PTR(Expr) *if, PTR(Expr) *then, PTR(Expr) \_else);
 
@@ -330,7 +326,7 @@ path.
 
 * * * * *
 
-FUNCTION (FunExpr)
+##### FUNCTION (FunExpr)
 
 Constructor: FunExpr(std::string formal\_arg, PTR(Expr) body);
 
@@ -339,7 +335,7 @@ formal\_arg is the argument that can be applied to the body Expr.
 
 * * * * *
 
-FUNCTION CALLS (CallExpr)
+##### FUNCTION CALLS (CallExpr)
 
 Constructor: CallExpr(PTR(Expr) to\_be\_called, PTR(Expr) actual\_arg);
 
@@ -347,147 +343,144 @@ Script representation of a function call. The to\_be\_called parameter
 is the defined function and the actual\_arg is the argument used to
 evaluate the function.
 
-\*\*\*\* BUILT-IN FUNCTIONS \*\*\*\*
+## BUILT-IN FUNCTIONS
 
 When writing expression strings, the following keywords are available:
 
--   means Addition
--   means Multiplication == means Equality *let binds a value expression
+* `+` means Addition
+* `*` means Multiplication 
+* `==` means Equality 
+* `_let` binds a value expression
     to a variable name in which the variable name can be used in the
-    body of the let expression *in assigned the body of the let
-    expression *if allows for conditional representation of two
-    different expressions. *then assigns an Expr that will run if the if
-    condition is met *else assigns and Expr that will run if the
-    condition isn't met *true means “true” boolean *false means “false”
-    boolean *fun allows for function expressions with variable name.
+    body of the let expression 
+* `_in` assigned the body of the let
+    expression 
+* `_if` allows for conditional representation of two
+    different expressions. 
+* `_then` assigns an Expr that will run if the if
+    condition is met 
+* `_else` assigns and Expr that will run if the
+    condition isn't met 
+* `_true` means “true” boolean 
+* `_false` means “false”
+    boolean 
+* `_fun` allows for function expressions with variable name.
     Function calls will replace variable with designated variable
     expression.
 
-\*\*\*\*MSDSCRIPT API \*\*\*\*
+## MSDSCRIPT API \*\*\*\*
 
-expr.cpp and expr.h:
+`expr.cpp and expr.h`: Main files for expression representations.
 
-Main files for expression representations.
+### Methods: 
+`bool equals(PTR(Expr) other)`: Checks if two expressions are the same. 
+`PTR(Val) interp(PTR(Env) env)`: Evaluate the expression for the result. 
+`std::ostream& print(std::ostream& argument)`: Prints out the Expr to the outstream. 
+`std::ostream& pretty_print(std::ostream& argument)`: Similar to print method but prints the Expr that is more legible with proper spacing and usages of parentheses 
+`std::string to_string()`: Converts the Expr to a string. 
+`std::string to_pretty_string()`: Converts the Expr to a string that is more legible with proper spacing and usages of parentheses. 
+`void pretty_print_at(print_mode_t mode,
+std::ostream& argument, int newLineLocation, bool alwaysRHS)`: Helper method that determines the correct spacing and usages of parentheses.
+`void step_interp()`: Evaluate the expression using explicit continuation (interpreting by steps)
 
-Methods: bool equals(PTR(Expr) other): Checks if two expressions are the
-same. PTR(Val) interp(PTR(Env) env): Evaluate the expression for the
-result. std::ostream& print(std::ostream& argument): Prints out the Expr
-to the outstream. std::ostream& pretty\_print(std::ostream& argument):
-Similar to print method but prints the Expr that is more legible with
-proper spacing and usages of parentheses std::string to\_string():
-Converts the Expr to a string. std::string to\_pretty\_string():
-Converts the Expr to a string that is more legible with proper spacing
-and usages of parentheses. void pretty\_print\_at(print\_mode\_t mode,
-std::ostream& argument, int newLineLocation, bool alwaysRHS): Helper
-method that determines the correct spacing and usages of parentheses.
-void step\_interp(): Evaluate the expression using explicit continuation
-(interpreting by steps)
-
-Also see MSDSCRIPT GRAMMER for more details.
+**Also see MSDSCRIPT GRAMMER for more details.**
 
 * * * * *
 
-val.cpp and val.h: Stores interpreted values as a Val Class object
+`val.cpp and val.h`: Stores interpreted values as a Val Class object
 instead of an Expr Class object.
 
 Interpretting FunExpr returns FunVal while interpretting BoolExp returns
 BoolVal. Any other Expr interpretation returns NumVal.
 
-Methods:
+### Methods:
 
-PTR(Val) add\_to(PTR(Val) other\_val): Helper method to add values
-together and return the result as a Val object. PTR(Val)
-mult\_by(PTR(Val) other\_val): Helper method to multiples values
-together and return the result as a Val object. bool equals(PTR(Val)
-other): Check if two values are the same. std::string to\_string():
-Converts value of the object to a string. PTR(Val) call(PTR(Val)
-actual\_arg): Call the function with the actual argument. void
-call\_step(PTR(Val) actual\_arg, PTR(Cont) rest): Explicit continuation
-verson of call method. Call the function with the actual argument
-virtual bool is\_true(): Check if the value is true or false.
+`PTR(Val) add_to(PTR(Val) other_val)`: Helper method to add values together and return the result as a Val object. 
+`PTR(Val) mult_by(PTR(Val) other_val)`: Helper method to multiples values together and return the result as a Val object. 
+`bool equals(PTR(Val) other)`: Check if two values are the same. 
+`std::string to_string()`: Converts value of the object to a string. 
+`PTR(Val) call(PTR(Val) actual_arg)`: Call the function with the actual argument. 
+`void call_step(PTR(Val) actual_arg, PTR(Cont) rest)`: Explicit continuation verson of call method. Call the function with the actual argument
+`bool is_true()`: Check if the value is true or false.
 
 * * * * *
 
-env.cpp and env.h: Environment for referencing of values; similar to
+`env.cpp and env.h`: Environment for referencing of values; similar to
 substitution functionality
 
-Properties:
+### Properties:
 
-static PTR(Env) empty: Represents an empty environment.
+`static PTR(Env) empty`: Represents an empty environment.
 
-Methods:
+### Methods:
 
-PTR(Val) lookup(std::string find\_name): Find the value of a variable.
+`PTR(Val) lookup(std::string find_name)`: Find the value of a variable.
 
 * * * * *
 
-cont.cpp and cont.h: Allows for step mode interpretation that avoids
+`cont.cpp and cont.h`: Allows for step mode interpretation that avoids
 using C++ stack to prevent segmentation faults for large recursive
 expressions
 
-Properties:
+### Properties:
 
-static PTR(Cont) done: Finished. No more need for continue steps.
+`static PTR(Cont) done`: Finished. No more need for continue steps.
 
-Methods:
+### Methods:
 
-step\_continue(): Sets the mode to either interp\_mode or continue\_mode
+`step_continue()`: Sets the mode to either interp\_mode or continue\_mode
 in Step Class.
 
 * * * * *
 
-step.cpp and step.h: Allows for step mode interpretation. Runs step by
+`step.cpp and step.h`: Allows for step mode interpretation. Runs step by
 step until PTR(Cont) done is reached.
 
-enum: mode\_t consists of two modes, interp\_mode or continue\_mode
+`enum`: mode_t consists of two modes, `interp_mode` or `continue_mode`
 
-Properties: static mode\_t mode: Represents the mode from enum mode\_t.
-The interp\_mode indicates that start expression interpretation while
-continue\_mode deliver values to a continuation. static PTR(Expr) expr:
-Contains the current expression that needs to be interpreted. static
-PTR(Env) env: Keep track of the environment of the current step. static
-PTR(Val) val: Contains the value to be delivered to the continuation.
-static PTR(Cont) cont: Represents the next step in continuation.
+### Properties: 
+`static mode_t mode`: Represents the mode from enum mode_t.
+The `interp_mode` indicates that start expression interpretation while
+`continue_mode` deliver values to a continuation. 
+`static PTR(Expr) expr`: Contains the current expression that needs to be interpreted. 
+`static PTR(Env) env`: Keep track of the environment of the current step. 
+`static PTR(Val) val`: Contains the value to be delivered to the continuation.
+`static PTR(Cont) cont`: Represents the next step in continuation.
 
-Methods: static PTR(Val) interp\_by\_steps(PTR(Expr) e): Interp
+### Methods: 
+`static PTR(Val) interp_by_steps(PTR(Expr) e)`: Interp
 expression by stepping. Avoids recursive calls at C++ stack level that
 causes stack overflow.
 
 * * * * *
 
-parse.cpp and parse.h: Parses strings into expressions
+`parse.cpp and parse.h`: Parses strings into expressions
 
-Functions: PTR(Expr) parse(std::istream &in): Parses command line
-expressions into Expr object. PTR(Expr) parse\_str(std::string s):
-Parses expression string to Expr object.
+### Functions: 
+`PTR(Expr) parse(std::istream &in)`: Parses command line
+expressions into Expr object. 
+`PTR(Expr) parse_str(std::string s)`: Parses expression string to Expr object.
 
-Helper Functions: static void consume(std::istream &in, int expect): If
-the current in-stream character is equal to the expected char, then
-fetch that character from the in-stream. static void
-skip\_whitespace(std::istream &in): Removes/skip unneccessary spaces.
-PTR(Expr) parse\_num(std::istream &in): Parses numbers of the overall
-in-stream. PTR(Expr) parse\_var(std::istream &in): Parses the variables
-of the overall in-stream. PTR(Expr) parse\_let(std::istream &in): Parses
-the let expression of the overall in-stream. std::string
-parse\_keyword(std::istream &in): Detects the usages of keywords with an
-underscore then parses and return the entire keyword string. PTR(Expr)
-parse\_if(std::istream &in): Parses the If expression of the overall
-in-stream. PTR(Expr) parse\_fun(std::istream &in): Parses the function
-expression of the overall in-stream.
+### Helper Functions: 
+`static void consume(std::istream &in, int expect)`: If the current in-stream character is equal to the expected char, then
+fetch that character from the in-stream. 
+`static void skip_whitespace(std::istream &in)`: Removes/skip unneccessary spaces.
+`PTR(Expr) parse_num(std::istream &in)`: Parses numbers of the overall in-stream. 
+`PTR(Expr) parse_var(std::istream &in)`: Parses the variables of the overall in-stream. 
+`PTR(Expr) parse_let(std::istream &in)`: Parses the let expression of the overall in-stream. 
+`std::string parse_keyword(std::istream &in)`: Detects the usages of keywords with an underscore then parses and return the entire keyword string. 
+`PTR(Expr)parse_if(std::istream &in)`: Parses the If expression of the overall in-stream. 
+`PTR(Expr) parse_fun(std::istream &in)`: Parses the function expression of the overall in-stream.
 
-static PTR(Expr) parse\_expr(std::istream &in): Initiator function that
-starts parsing expression in-stream. This helper function is called in
-the main parse and parse\_str functions. Parses comparative expressions
-or returns parse\_comparg. PTR(Expr) parse\_comparg(std::istream &in):
-Parses addition expressions or returns parse\_addend. PTR(Expr)
-parse\_addend(std::istream &in): Parses multiplication expressions or
-returns parse\_multicand. PTR(Expr) parse\_multicand(std::istream &in):
-Parses Function Call expressions or returns parse\_inner. PTR(Expr)
-parse\_inner(std::istream &in): Parses numbers, new Expr, variables, let
-expressions, boolean expressions, if expressions, and function
+`static PTR(Expr) parse_expr(std::istream &in)`: Initiator function that starts parsing expression in-stream. This helper function is called in
+the main parse and parse_str functions. Parses comparative expressions or returns parse_comparg. 
+`PTR(Expr) parse_comparg(std::istream &in)`: Parses addition expressions or returns parse_addend. 
+`PTR(Expr) parse_addend(std::istream &in`: Parses multiplication expressions or returns parse_multicand. 
+`PTR(Expr) parse_multicand(std::istream &in)`: Parses Function Call expressions or returns parse_inner. 
+`PTR(Expr) parse_inner(std::istream &in)`: Parses numbers, new Expr, variables, let expressions, boolean expressions, if expressions, and function
 expressions.
 
-Parsing Grammar displayed visually:
+**Parsing Grammar displayed visually:**
 
 〈expr〉=〈comparg〉 |〈comparg〉==〈expr〉
 
@@ -503,34 +496,39 @@ Parsing Grammar displayed visually:
 
 * * * * *
 
-cmdline.cpp and cmdline.h: Allows for specific calls of the different
+`cmdline.cpp and cmdline.h`: Allows for specific calls of the different
 modes available for MSDScript
 
-Functions: int use\_arguments(int argc, char \*\*argv): Takes in command
+### Functions: 
+`int use_arguments(int argc, char **argv)`: Takes in command
 line arguments and execute designated modes.
 
 * * * * *
 
-pointer.h: Shared pointers used to help with memory leaks
+`pointer.h`: Shared pointers used to help with memory leaks
 
 The following macros are used to make code more readable:
 
-Macro C++ NEW(T) std::make\_shared<T> PTR(T) std::shared\_ptr<T> CAST(T)
-std::dynamic\_pointer\_cast<T> CLASS(T) class T : public
-std::enable\_shared\_from\_this<T> THIS shared\_from\_this()
+Macro | C++
+----- | --- 
+NEW(T) | std::make_shared<T>
+PTR(T) | std::shared_ptr<T>
+CAST(T) | std::dynamic_pointer_cast<T>
+CLASS(T) | class T : public std::enable_shared_from_this<T>
+THIS | shared_from_this()
 
 * * * * *
 
-catch.h: Testing library used to test MSDScript functionalities. Tests
+`catch.h`: Testing library used to test MSDScript functionalities. Tests
 can be found at the end of each .cpp files. Expr tests are in test.cpp
 
-POTENTIAL ERRORS
+## POTENTIAL ERRORS
 
-Segmentation faults may occur in interp mode if the recursive expression
+`Segmentation faults` may occur in interp mode if the recursive expression
 is too large. Use step mode instead. Multiplication and addition cannot
 be used on other expressions besides number expression
 
-REPORT A BUG OR QUESTIONS/CONCERNS
+## REPORT A BUG OR QUESTIONS/CONCERNS
 
 Please send a direct message to htruong17 on GitHub or email at
 harold.truong@gmail.com

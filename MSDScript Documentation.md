@@ -373,15 +373,14 @@ When writing expression strings, the following keywords are available:
 `expr.cpp and expr.h`: Main files for expression representations.
 
 ### Methods: 
-`bool equals(PTR(Expr) other)`: Checks if two expressions are the same. 
-`PTR(Val) interp(PTR(Env) env)`: Evaluate the expression for the result. 
-`std::ostream& print(std::ostream& argument)`: Prints out the Expr to the outstream. 
-`std::ostream& pretty_print(std::ostream& argument)`: Similar to print method but prints the Expr that is more legible with proper spacing and usages of parentheses 
-`std::string to_string()`: Converts the Expr to a string. 
-`std::string to_pretty_string()`: Converts the Expr to a string that is more legible with proper spacing and usages of parentheses. 
-`void pretty_print_at(print_mode_t mode,
-std::ostream& argument, int newLineLocation, bool alwaysRHS)`: Helper method that determines the correct spacing and usages of parentheses.
-`void step_interp()`: Evaluate the expression using explicit continuation (interpreting by steps)
+* `bool equals(PTR(Expr) other)`: Checks if two expressions are the same. 
+* `PTR(Val) interp(PTR(Env) env)`: Evaluate the expression for the result. 
+* `std::ostream& print(std::ostream& argument)`: Prints out the Expr to the outstream. 
+* `std::ostream& pretty_print(std::ostream& argument)`: Similar to print method but prints the Expr that is more legible with proper spacing and usages of parentheses 
+* `std::string to_string()`: Converts the Expr to a string. 
+* `std::string to_pretty_string()`: Converts the Expr to a string that is more legible with proper spacing and usages of parentheses. 
+* `void pretty_print_at(print_mode_t mode, std::ostream& argument, int newLineLocation, bool alwaysRHS)`: Helper method that determines the correct spacing and usages of parentheses.
+*`void step_interp()`: Evaluate the expression using explicit continuation (interpreting by steps)
 
 **Also see MSDSCRIPT GRAMMER for more details.**
 
@@ -395,13 +394,13 @@ BoolVal. Any other Expr interpretation returns NumVal.
 
 ### Methods:
 
-`PTR(Val) add_to(PTR(Val) other_val)`: Helper method to add values together and return the result as a Val object. 
-`PTR(Val) mult_by(PTR(Val) other_val)`: Helper method to multiples values together and return the result as a Val object. 
-`bool equals(PTR(Val) other)`: Check if two values are the same. 
-`std::string to_string()`: Converts value of the object to a string. 
-`PTR(Val) call(PTR(Val) actual_arg)`: Call the function with the actual argument. 
-`void call_step(PTR(Val) actual_arg, PTR(Cont) rest)`: Explicit continuation verson of call method. Call the function with the actual argument
-`bool is_true()`: Check if the value is true or false.
+* `PTR(Val) add_to(PTR(Val) other_val)`: Helper method to add values together and return the result as a Val object. 
+* `PTR(Val) mult_by(PTR(Val) other_val)`: Helper method to multiples values together and return the result as a Val object. 
+* `bool equals(PTR(Val) other)`: Check if two values are the same. 
+* `std::string to_string()`: Converts value of the object to a string. 
+* `PTR(Val) call(PTR(Val) actual_arg)`: Call the function with the actual argument. 
+* `void call_step(PTR(Val) actual_arg, PTR(Cont) rest)`: Explicit continuation verson of call method. Call the function with the actual argument
+* `bool is_true()`: Check if the value is true or false.
 
 * * * * *
 
@@ -410,11 +409,11 @@ substitution functionality
 
 ### Properties:
 
-`static PTR(Env) empty`: Represents an empty environment.
+* `static PTR(Env) empty`: Represents an empty environment.
 
 ### Methods:
 
-`PTR(Val) lookup(std::string find_name)`: Find the value of a variable.
+* `PTR(Val) lookup(std::string find_name)`: Find the value of a variable.
 
 * * * * *
 
@@ -424,11 +423,11 @@ expressions
 
 ### Properties:
 
-`static PTR(Cont) done`: Finished. No more need for continue steps.
+* `static PTR(Cont) done`: Finished. No more need for continue steps.
 
 ### Methods:
 
-`step_continue()`: Sets the mode to either interp\_mode or continue\_mode
+* `step_continue()`: Sets the mode to either interp\_mode or continue\_mode
 in Step Class.
 
 * * * * *
@@ -436,19 +435,20 @@ in Step Class.
 `step.cpp and step.h`: Allows for step mode interpretation. Runs step by
 step until PTR(Cont) done is reached.
 
-`enum`: mode_t consists of two modes, `interp_mode` or `continue_mode`
+### enum: 
+* mode_t consists of two modes, `interp_mode` or `continue_mode`
 
 ### Properties: 
-`static mode_t mode`: Represents the mode from enum mode_t.
+* `static mode_t mode`: Represents the mode from enum mode_t.
 The `interp_mode` indicates that start expression interpretation while
-`continue_mode` deliver values to a continuation. 
-`static PTR(Expr) expr`: Contains the current expression that needs to be interpreted. 
-`static PTR(Env) env`: Keep track of the environment of the current step. 
-`static PTR(Val) val`: Contains the value to be delivered to the continuation.
-`static PTR(Cont) cont`: Represents the next step in continuation.
+* `continue_mode` deliver values to a continuation. 
+* `static PTR(Expr) expr`: Contains the current expression that needs to be interpreted. 
+* `static PTR(Env) env`: Keep track of the environment of the current step. 
+* `static PTR(Val) val`: Contains the value to be delivered to the continuation.
+* `static PTR(Cont) cont`: Represents the next step in continuation.
 
 ### Methods: 
-`static PTR(Val) interp_by_steps(PTR(Expr) e)`: Interp
+* `static PTR(Val) interp_by_steps(PTR(Expr) e)`: Interp
 expression by stepping. Avoids recursive calls at C++ stack level that
 causes stack overflow.
 
@@ -457,43 +457,52 @@ causes stack overflow.
 `parse.cpp and parse.h`: Parses strings into expressions
 
 ### Functions: 
-`PTR(Expr) parse(std::istream &in)`: Parses command line
+* `PTR(Expr) parse(std::istream &in)`: Parses command line
 expressions into Expr object. 
-`PTR(Expr) parse_str(std::string s)`: Parses expression string to Expr object.
+* `PTR(Expr) parse_str(std::string s)`: Parses expression string to Expr object.
 
 ### Helper Functions: 
-`static void consume(std::istream &in, int expect)`: If the current in-stream character is equal to the expected char, then
+* `static void consume(std::istream &in, int expect)`: If the current in-stream character is equal to the expected char, then
 fetch that character from the in-stream. 
-`static void skip_whitespace(std::istream &in)`: Removes/skip unneccessary spaces.
-`PTR(Expr) parse_num(std::istream &in)`: Parses numbers of the overall in-stream. 
-`PTR(Expr) parse_var(std::istream &in)`: Parses the variables of the overall in-stream. 
-`PTR(Expr) parse_let(std::istream &in)`: Parses the let expression of the overall in-stream. 
-`std::string parse_keyword(std::istream &in)`: Detects the usages of keywords with an underscore then parses and return the entire keyword string. 
-`PTR(Expr)parse_if(std::istream &in)`: Parses the If expression of the overall in-stream. 
-`PTR(Expr) parse_fun(std::istream &in)`: Parses the function expression of the overall in-stream.
+* `static void skip_whitespace(std::istream &in)`: Removes/skip unneccessary spaces.
+* `PTR(Expr) parse_num(std::istream &in)`: Parses numbers of the overall in-stream. 
+* `PTR(Expr) parse_var(std::istream &in)`: Parses the variables of the overall in-stream. 
+* `PTR(Expr) parse_let(std::istream &in)`: Parses the let expression of the overall in-stream. 
+* `std::string parse_keyword(std::istream &in)`: Detects the usages of keywords with an underscore then parses and return the entire keyword string. 
+* `PTR(Expr)parse_if(std::istream &in)`: Parses the If expression of the overall in-stream. 
+* `PTR(Expr) parse_fun(std::istream &in)`: Parses the function expression of the overall in-stream.
 
-`static PTR(Expr) parse_expr(std::istream &in)`: Initiator function that starts parsing expression in-stream. This helper function is called in
+* `static PTR(Expr) parse_expr(std::istream &in)`: Initiator function that starts parsing expression in-stream. This helper function is called in
 the main parse and parse_str functions. Parses comparative expressions or returns parse_comparg. 
-`PTR(Expr) parse_comparg(std::istream &in)`: Parses addition expressions or returns parse_addend. 
-`PTR(Expr) parse_addend(std::istream &in`: Parses multiplication expressions or returns parse_multicand. 
-`PTR(Expr) parse_multicand(std::istream &in)`: Parses Function Call expressions or returns parse_inner. 
-`PTR(Expr) parse_inner(std::istream &in)`: Parses numbers, new Expr, variables, let expressions, boolean expressions, if expressions, and function
+* `PTR(Expr) parse_comparg(std::istream &in)`: Parses addition expressions or returns parse_addend. 
+* `PTR(Expr) parse_addend(std::istream &in`: Parses multiplication expressions or returns parse_multicand. 
+* `PTR(Expr) parse_multicand(std::istream &in)`: Parses Function Call expressions or returns parse_inner. 
+* `PTR(Expr) parse_inner(std::istream &in)`: Parses numbers, new Expr, variables, let expressions, boolean expressions, if expressions, and function
 expressions.
 
 **Parsing Grammar displayed visually:**
+```
+〈expr〉=〈comparg〉 
+                |〈comparg〉==〈expr〉
 
-〈expr〉=〈comparg〉 |〈comparg〉==〈expr〉
+〈comparg〉=〈addend〉 
+                |〈addend〉+〈comparg〉
 
-〈comparg〉=〈addend〉 |〈addend〉+〈comparg〉
+〈addend〉=〈multicand〉 
+                |〈multicand〉\*〈addend〉
 
-〈addend〉=〈multicand〉 |〈multicand〉\*〈addend〉
+〈multicand〉=〈inner〉 
+                |〈multicand〉(〈expr〉)
 
-〈multicand〉=〈inner〉 |〈multicand〉(〈expr〉)
-
-〈inner〉=〈number〉 |(〈expr〉) |〈variable〉
-|*let〈variable〉=〈expr〉*in〈expr〉 |*true |*false
-|*if〈expr〉*then〈expr〉*else〈expr〉 |*fun(〈variable〉)〈expr〉
-
+〈inner〉=〈number〉 
+                | (〈expr〉) 
+                |〈variable〉
+                | _let〈variable〉=〈expr〉_in〈expr〉 
+                | _true 
+                | _false
+                | _if〈expr〉_then〈expr〉_else〈expr〉 
+                | _fun(〈variable〉)〈expr〉
+```
 * * * * *
 
 `cmdline.cpp and cmdline.h`: Allows for specific calls of the different

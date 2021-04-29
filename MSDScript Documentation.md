@@ -1,8 +1,7 @@
 ## LIBRARY DESCRIPTION
 
-MSDScript is an interpreter library built with C++. It is designed to
-operate a wide variety of functionalities through specific keywords in
-command line.
+MSDScript is an interpreter library built with C++. It is designed to operate a wide variety of
+functionalities through specific keywords in command line.
 
 This library can perform the following: 
 * Addition 
@@ -21,69 +20,79 @@ The following modes are available:
 
 ## GETTING STARTED
 
-To build and create the executable ‘msdscript’ file, ensure that the
+To build and create the executable **msdscript** file, ensure that the
 directory in terminal contains the Makefile and the source files. The
 files will most likely be in the Downloads folder if you've downloaded
-it from GitHub. In terminal, type the command “make”. The file created
-is named “msdscript”.
+it from GitHub. In terminal, type the command `make`. The file created
+is named `msdscript`.
 
 To build a library file for MSDScript, run the following commands in
-terminal: `ar -ruv libmsdscript.a cont.o env.o expr.o parse.o step.o
-val.o cmdline.o test.o` The library file is named “libmsdscript.a”.
-Note\* You will need to run make first to generate .o files
+terminal:\
+`ar -ruv libmsdscript.a cont.o env.o expr.o parse.o step.o val.o cmdline.o test.o`\
+
+The library file is named `libmsdscript.a`.
+
+**Note:** You will need to run make first to generate .o files
 
 ## USING MSDSCRIPT EXECUTABLE
 
-To run the executable file in terminal, enter the command
+To run the executable file in terminal, enter the command:
 
-./msdscript --mode (the mode is specify with two hyphens and the
-keyword)
+`./msdscript --mode` (the mode is specify with two hyphens and the keyword)
 
 For example, interp mode can be accessed with the following command:
-./msdscript --interp
+`./msdscript --interp`
 
-Note: When executing command lines, it is necessary to hit Ctrl+D
+**Note:** When executing command lines, it is necessary to hit `Ctrl+D`
 instead of return to begin program execution.
 
 ## USING MSDSCRIPT LIBRARY FILE
 
-The library file allows for MSDScript to be linked to different programs
-for specific needs. MSDScript has a built-in parsing functionality that
+The library file allows for MSDScript to be linked to different programs for specific needs. MSDScript has a built-in parsing functionality that
 takes string inputs and parses it to expressions that can be interpreted
 for results.
 
 To use MSDScript with your project, you will have add these includes to
-the top of your project: \#include "parse.h" \#include "expr.h"
-\#include "val.h" \#include "cmdline.h" \#include <sstream>
+the top of your project: 
+```
+#include "parse.h" 
+#include "expr.h"
+#include "val.h" 
+#include "step.h"
+#include <sstream>
+```
 
 Parse function takes in an istream so you will have to turn your
-expression string into an istringstream by using the following:
-std::istringstream iss(std::string string);
+expression string into an istringstream by using the following code:
+`std::istringstream iss(std::string string);`, where `std::string string` is your expression string.
 
-Then, you can use that istringstream to either:
+Then, you can add the appropriate line below to perform specific MSDScript functionality. These functions will `return` strings that
+can be outputted to stream using `std::cout`.
 
-Interp Step::interp\_by\_steps(parse(iss))-\>to\_string();
+* To interpret your expression: `Step::interp_by_steps(parse(iss))->to_string();`
 
-Print parse(iss)-\>to\_string();
+* To print your expression: `parse(iss)->to_string();`
 
-Pretty-Print parse(iss)-\>to\_pretty\_string();
+* To pretty-print your expression: `parse(iss)->to_pretty_string();`
 
-You can also replace the istringstream iss with std::cin if you want to
+You can also replace the istringstream iss with `std::cin` if you want to
 take input from the command line.
 
-For example, MSDScript library can be used to assign the day of the week
-to host a meeting. To link the library with the which\_day program, the
+### Example
+
+MSDScript library can be used to assign the day of the week
+to host a meeting. To link the library with the `which_day` program, the
 following command is used:
 
-c++ -o which\_day which\_day.cpp libmsdscript.a
+`c++ -o which\_day which\_day.cpp libmsdscript.a`
 
-which\_day is the name of the executable file that we have chosen
-which\_day.cpp is the C++ file for the program libmsdscript.a is the
-MSDScript library that we created beforehand
+* `which_day` is the name of the executable file that we have chosen
+* `which_day.cpp` is the C++ file for the program 
+* `libmsdscript.a` is the MSDScript library that we created beforehand
 
 In this example, if we run the command:
 
-./which\_day 13
+`./which\_day 13`
 
 The result will be a 4. This means that on the 14th week (week starts
 from 0) of the year, the day 4 of that week is when the meeting will

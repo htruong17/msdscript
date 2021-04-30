@@ -389,8 +389,6 @@ Main files for expression representations.
 
 *Also see MSDSCRIPT GRAMMER for more details.*
 
-* * * * *
-
 ### val.cpp and val.h: 
 Stores interpreted values as a Val Class object instead of an Expr Class object.
 
@@ -407,8 +405,6 @@ BoolVal. Any other Expr interpretation returns NumVal.
 * `void call_step(PTR(Val) actual_arg, PTR(Cont) rest)`: Explicit continuation verson of call method. Call the function with the actual argument
 * `bool is_true()`: Check if the value is true or false.
 
-* * * * *
-
 ### env.cpp and env.h: 
 Environment for referencing of values; similar to
 substitution functionality
@@ -420,8 +416,6 @@ substitution functionality
 ##### Methods:
 
 * `PTR(Val) lookup(std::string find_name)`: Find the value of a variable.
-
-* * * * *
 
 ### cont.cpp and cont.h: 
 Allows for step mode interpretation that avoids
@@ -436,8 +430,6 @@ expressions
 
 * `step_continue()`: Sets the mode to either interp\_mode or continue\_mode
 in Step Class.
-
-* * * * *
 
 ### step.cpp and step.h:
 Allows for step mode interpretation. Runs step by
@@ -459,8 +451,6 @@ The `interp_mode` indicates that start expression interpretation while
 * `static PTR(Val) interp_by_steps(PTR(Expr) e)`: Interp
 expression by stepping. Avoids recursive calls at C++ stack level that
 causes stack overflow.
-
-* * * * *
 
 ### parse.cpp and parse.h:
 Parses strings into expressions
@@ -512,7 +502,6 @@ expressions.
                 | _if〈expr〉_then〈expr〉_else〈expr〉 
                 | _fun(〈variable〉)〈expr〉
 ```
-* * * * *
 
 ### cmdline.cpp and cmdline.h: 
 Allows for specific calls of the different
@@ -521,8 +510,6 @@ modes available for MSDScript
 ##### Functions: 
 `int use_arguments(int argc, char **argv)`: Takes in command
 line arguments and execute designated modes.
-
-* * * * *
 
 ### pointer.h:
 Shared pointers used to help with memory leaks
@@ -536,8 +523,6 @@ PTR(T) | std::shared_ptr<T>
 CAST(T) | std::dynamic_pointer_cast<T>
 CLASS(T) | class T : public std::enable_shared_from_this<T>
 THIS | shared_from_this()
-
-* * * * *
 
 ### catch.h: 
 Testing library used to test MSDScript functionalities. Tests
